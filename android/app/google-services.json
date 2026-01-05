@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "287633563900",
+    "project_id": "app-piscina-v3",
+    "storage_bucket": "app-piscina-v3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:287633563900:android:a323c910aef34064f87779",
+        "android_client_info": {
+          "package_name": "com.example.app_piscina_v3"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPrLwLqhjoheLMFJqBEgvuABNEQrkqN_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
