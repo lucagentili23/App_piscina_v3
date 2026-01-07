@@ -10,6 +10,6 @@ class AdminHome extends StatefulWidget {
 class _AdminHomeState extends State<AdminHome> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Text('AdminHome'));
+    return Center(child: Text('AdminHome'));
   }
 }

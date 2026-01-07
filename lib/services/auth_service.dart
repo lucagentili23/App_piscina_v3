@@ -1,3 +1,4 @@
+import 'package:app_piscina_v3/models/user_model.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -84,15 +85,15 @@ class AuthService {
     final userRef = _db.collection('users').doc(user.uid);
 
     await userRef.set({
-      'uid': user.uid,
+      'id': user.uid,
       'email': email,
-      'name': name,
+      'firstName': name,
       'lastName': lastName,
-      'sex': gender.name,
+      'gender': gender.name,
       'children': [],
       'role': role.name,
       'createdAt': FieldValue.serverTimestamp(),
-      'profileImage': gender == Gender.m
+      'photoUrl': gender == Gender.m
           ? 'assets/images/Immagine_profilo_m.png'
           : 'assets/images/Immagine_profilo_f.png',
     });
@@ -108,7 +109,7 @@ class AuthService {
         if (doc.exists) {
           final role = doc.get('role');
 
-          if (role == 'amministratore') {
+          if (role == 'admin') {
             return UserRole.admin;
           } else {
             return UserRole.user;
@@ -120,5 +121,22 @@ class AuthService {
       return null;
     }
     return null;
+  }
+
+  Future<UserModel?> getUserData() async {
+    try {
+      final currentUser = _firebaseAuth.currentUser;
+
+      if (currentUser != null) {
+        final doc = await _db.collection('users').doc(currentUser.uid).get();
+
+        if (doc.exists && doc.data() != null) {
+          return UserModel.fromMap(doc.data()!, currentUser.uid);
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 }

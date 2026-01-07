@@ -10,6 +10,6 @@ class UserHome extends StatefulWidget {
 class _UserHomeState extends State<UserHome> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Text('UserHome'));
+    return Center(child: Text('UserHome'));
   }
 }

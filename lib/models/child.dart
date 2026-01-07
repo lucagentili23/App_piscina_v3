@@ -1,9 +1,11 @@
+import 'package:app_piscina_v3/utils/enums.dart';
+
 class Child {
   final String id;
   final String firstName;
   final String lastName;
   final String photoUrl;
-  final String gender;
+  final Gender gender;
 
   Child({
     required this.id,
@@ -19,7 +21,7 @@ class Child {
       firstName: data['firstName'] ?? '',
       lastName: data['lastName'] ?? '',
       photoUrl: data['photoUrl'] ?? '',
-      gender: data['gender'] ?? 'm',
+      gender: data['gender'] == 'm' ? Gender.m : Gender.f,
     );
   }
 
@@ -28,7 +30,7 @@ class Child {
       'firstName': firstName,
       'lastName': lastName,
       'photoUrl': photoUrl,
-      'gender': gender,
+      'gender': gender.name,
     };
   }
 

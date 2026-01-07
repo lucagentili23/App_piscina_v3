@@ -18,7 +18,8 @@ class Attendee {
       id: documentId,
       userId: data['userId'] ?? '',
       childId: data['childId'],
-      displayedName: data['firstName'] + ' ' + data['lastName'] ?? '',
+      displayedName: '${data['firstName'] ?? ''} ${data['lastName'] ?? ''}'
+          .trim(),
       displayedPhotoUrl: data['photoUrl'] ?? '',
     );
   }

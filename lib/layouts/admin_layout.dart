@@ -1,6 +1,9 @@
 import 'package:app_piscina_v3/screens/admin_home.dart';
 import 'package:app_piscina_v3/screens/clients.dart';
 import 'package:app_piscina_v3/screens/courses.dart';
+import 'package:app_piscina_v3/screens/sign_in.dart';
+import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
 class AdminLayout extends StatefulWidget {
@@ -12,6 +15,7 @@ class AdminLayout extends StatefulWidget {
 }
 
 class _AdminLayoutState extends State<AdminLayout> {
+  final _authService = AuthService();
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
@@ -21,6 +25,14 @@ class _AdminLayoutState extends State<AdminLayout> {
   ];
 
   final List<String> _titles = ['Home', 'Corsi', 'Clienti'];
+
+  void _signOut() async {
+    await _authService.signOut();
+
+    if (!mounted) return;
+
+    Nav.replace(context, SignIn());
+  }
 
   @override
   void initState() {
@@ -33,7 +45,16 @@ class _AdminLayoutState extends State<AdminLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_titles[_selectedIndex])),
+      appBar: AppBar(
+        title: Text(_titles[_selectedIndex]),
+        actions: [
+          if (_selectedIndex == 0)
+            IconButton(
+              onPressed: () => _signOut(),
+              icon: Icon(Icons.exit_to_app),
+            ),
+        ],
+      ),
 
       // Cambia pagina senza distruggerla
       body: IndexedStack(index: _selectedIndex, children: _screens),

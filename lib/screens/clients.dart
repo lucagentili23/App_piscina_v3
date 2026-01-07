@@ -10,6 +10,6 @@ class Clients extends StatefulWidget {
 class _ClientsState extends State<Clients> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Center(child: Text('Clients'));
   }
 }
