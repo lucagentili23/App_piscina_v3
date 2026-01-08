@@ -54,11 +54,14 @@ class _SigupState extends State<SignUp> {
     });
 
     final name =
-        _nameController.text[0].toUpperCase() +
-        _nameController.text.substring(1);
+        (_nameController.text[0].toUpperCase() +
+                _nameController.text.substring(1))
+            .trim();
     final lastName =
-        _lastNameController.text[0].toUpperCase() +
-        _lastNameController.text.substring(1);
+        (_lastNameController.text[0].toUpperCase() +
+                _lastNameController.text.substring(1))
+            .trim();
+
     try {
       final user = await _authService.signUp(
         email: _emailController.text,

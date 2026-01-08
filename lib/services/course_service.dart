@@ -93,4 +93,51 @@ class CourseService {
     } catch (e) {}
     return null;
   }
+
+  Future<List<Map<String, dynamic>>> getBookedCourses(String userId) async {
+    try {
+      final querySnapshot = await _db
+          .collectionGroup('attendees')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) return [];
+
+      final Map<String, List<String>> courseAttendeesMap = {};
+
+      for (var doc in querySnapshot.docs) {
+        final courseId = doc.reference.parent.parent!.id;
+        final data = doc.data();
+        final name = data['displayName'];
+
+        if (!courseAttendeesMap.containsKey(courseId)) {
+          courseAttendeesMap[courseId] = [];
+        }
+        courseAttendeesMap[courseId]!.add(name);
+      }
+
+      List<Map<String, dynamic>> results = [];
+
+      for (String courseId in courseAttendeesMap.keys) {
+        final course = await getCourseById(courseId);
+
+        if (course != null && course.date.isAfter(DateTime.now())) {
+          results.add({
+            'course': course,
+            'names': courseAttendeesMap[courseId]!,
+          });
+        }
+      }
+
+      results.sort((a, b) {
+        final dateA = (a['course'] as Course).date;
+        final dateB = (b['course'] as Course).date;
+        return dateA.compareTo(dateB);
+      });
+
+      return results;
+    } catch (e) {
+      return [];
+    }
+  }
 }

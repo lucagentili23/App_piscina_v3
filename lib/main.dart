@@ -2,6 +2,7 @@ import 'package:app_piscina_v3/screens/splash.dart';
 import 'package:app_piscina_v3/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -20,6 +21,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'App piscina',
       theme: AppTheme.lightTheme,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('it', 'IT'), Locale('en', 'US')],
+      locale: const Locale('it', 'IT'),
       home: const Splash(),
     );
   }

@@ -138,4 +138,21 @@ class AuthService {
       return null;
     }
   }
+
+  Future<List<UserModel>> getUsers() async {
+    try {
+      final querySnapshot = await _db
+          .collection('users')
+          .where('role', isEqualTo: 'user')
+          .get();
+
+      final List<UserModel> users = querySnapshot.docs.map((doc) {
+        return UserModel.fromMap(doc.data(), doc.id);
+      }).toList();
+
+      return users;
+    } catch (e) {
+      return [];
+    }
+  }
 }

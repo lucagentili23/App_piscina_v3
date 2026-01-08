@@ -1,10 +1,13 @@
 import 'package:app_piscina_v3/models/child.dart';
+import 'package:app_piscina_v3/models/course.dart';
 import 'package:app_piscina_v3/models/user_model.dart';
 import 'package:app_piscina_v3/screens/add_child.dart';
 import 'package:app_piscina_v3/services/auth_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
+import 'package:app_piscina_v3/services/course_service.dart';
 import 'package:app_piscina_v3/theme.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
+import 'package:app_piscina_v3/utils/general_utils.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
@@ -18,9 +21,11 @@ class UserHome extends StatefulWidget {
 class _UserHomeState extends State<UserHome> {
   final _authService = AuthService();
   final _childService = ChildService();
+  final _courseService = CourseService();
 
   UserModel? _user;
   List<Child> _children = [];
+  List<Map<String, dynamic>> _bookedData = [];
 
   bool _isLoading = true;
 
@@ -33,19 +38,25 @@ class _UserHomeState extends State<UserHome> {
   Future<void> _loadData() async {
     try {
       final user = await _authService.getUserData();
-
       List<Child> children = [];
+      List<Map<String, dynamic>> bookedData = [];
 
       if (user != null) {
         children = await _childService.getChildren(user.id);
+        bookedData = await _courseService.getBookedCourses(user.id);
       }
 
       setState(() {
         _user = user;
         _children = children;
+        _bookedData = bookedData;
         _isLoading = false;
       });
-    } catch (e) {}
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -69,68 +80,150 @@ class _UserHomeState extends State<UserHome> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: AssetImage(_user!.photoUrl),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _user!.gender == Gender.m
-                    ? "Bentornato ${_user!.firstName}!"
-                    : "Bentornata ${_user!.firstName}!",
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              _children.isEmpty
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Hai dei figli da iscrivere?'),
-                        TextButton(
-                          onPressed: () => Nav.to(context, const AddChild()),
-                          child: Text('Clicca qui'),
-                        ),
-                      ],
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightSecondaryColor,
-                        borderRadius: BorderRadius.circular(20),
+    return SingleChildScrollView(
+      child: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: AssetImage(_user!.photoUrl),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _user!.gender == Gender.m
+                  ? "Bentornato ${_user!.firstName}!"
+                  : "Bentornata ${_user!.firstName}!",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            _children.isEmpty
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Hai dei figli da iscrivere?'),
+                      TextButton(
+                        onPressed: () => Nav.to(context, const AddChild()),
+                        child: Text('Clicca qui'),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
+                    ],
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.lightSecondaryColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            "I tuoi figli registrati:",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          ..._children.map((child) => _buildChildHeader(child)),
+                          TextButton.icon(
+                            onPressed: () => Nav.to(context, const AddChild()),
+                            icon: const Icon(Icons.add),
+                            label: const Text("Aggiungi"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+            const SizedBox(height: 20),
+            const Text(
+              "Le tue prenotazioni",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (_bookedData.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.0),
+                child: Center(
+                  child: Text(
+                    "Nessuna prenotazione attiva",
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                ),
+              )
+            else
+              ..._bookedData.map((data) {
+                final course = data['course'] as Course;
+                final names = data['names'] as List<String>;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              "I tuoi figli registrati:",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                course.type == CourseType.idrobike
+                                    ? Icons.pedal_bike
+                                    : Icons.pool,
+                                color: AppTheme.primaryColor,
+                                size: 24,
+                              ),
                             ),
-                            ..._children.map(
-                              (child) => _buildChildHeader(child),
-                            ),
-                            TextButton.icon(
-                              onPressed: () =>
-                                  Nav.to(context, const AddChild()),
-                              icon: const Icon(Icons.add),
-                              label: const Text("Aggiungi"),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    course.type.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dateAndTimeToString(course.date),
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
+                        const Divider(height: 20),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Partecipanti: ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Expanded(
+                              child: Text(
+                                names.join(", "),
+                                style: const TextStyle(color: Colors.black87),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-              const SizedBox(height: 20),
-            ],
-          ),
+                  ),
+                );
+              }),
+          ],
         ),
       ),
     );

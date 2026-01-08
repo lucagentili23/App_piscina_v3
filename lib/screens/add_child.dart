@@ -50,10 +50,19 @@ class _AddChildState extends State<AddChild> {
           ? 'assets/images/Immagine_profilo_m.png'
           : 'assets/images/Immagine_profilo_f.png';
 
+      final firstName =
+          (_nameController.text[0].toUpperCase() +
+                  _nameController.text.substring(1))
+              .trim();
+      final lastName =
+          (_lastNameController.text[0].toUpperCase() +
+                  _lastNameController.text.substring(1))
+              .trim();
+
       final child = Child(
         id: '',
-        firstName: _nameController.text,
-        lastName: _lastNameController.text,
+        firstName: firstName,
+        lastName: lastName,
         photoUrl: photoUrl,
         gender: _selectedValue,
       );
