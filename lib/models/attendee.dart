@@ -10,7 +10,7 @@ class Attendee {
     required this.userId,
     this.childId,
     required this.displayedName,
-    this.displayedPhotoUrl = '',
+    required this.displayedPhotoUrl,
   });
 
   factory Attendee.fromMap(Map<String, dynamic> data, String documentId) {

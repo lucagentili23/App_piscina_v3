@@ -90,7 +90,6 @@ class AuthService {
       'firstName': name,
       'lastName': lastName,
       'gender': gender.name,
-      'children': [],
       'role': role.name,
       'createdAt': FieldValue.serverTimestamp(),
       'photoUrl': gender == Gender.m

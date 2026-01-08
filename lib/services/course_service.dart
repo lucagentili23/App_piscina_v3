@@ -1,3 +1,4 @@
+import 'package:app_piscina_v3/models/attendee.dart';
 import 'package:app_piscina_v3/models/course.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -55,6 +56,41 @@ class CourseService {
     } catch (e) {
       return null;
     }
+    return null;
+  }
+
+  Future<String?> bookCourse(String courseId, List<Attendee> attendees) async {
+    try {
+      final courseRef = _db.collection('courses').doc(courseId);
+
+      final courseSnapshot = await courseRef.get();
+
+      if (!courseSnapshot.exists) {
+        throw 'Il corso non esiste più.';
+      }
+      final currentBooked = courseSnapshot.get('bookedSpots');
+      final maxSpots = courseSnapshot.get('maxSpots');
+
+      if (maxSpots != null && (currentBooked + attendees.length) > maxSpots) {
+        throw 'Posti insufficienti. Rimangono ${maxSpots - currentBooked} posti.';
+      }
+
+      for (var attendee in attendees) {
+        final attendeeRef = courseRef.collection('attendees').doc();
+
+        await attendeeRef.set({
+          'userId': attendee.userId,
+          'childId': attendee.childId,
+          'displayName': attendee.displayedName,
+          'photoUrl': attendee.displayedPhotoUrl,
+          'bookedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      await courseRef.update({'bookedSpots': currentBooked + attendees.length});
+
+      return null;
+    } catch (e) {}
     return null;
   }
 }

@@ -15,4 +15,20 @@ class ChildService {
       rethrow;
     }
   }
+
+  Future<List<Child>> getChildren(String parentId) async {
+    try {
+      final snapshot = await _db
+          .collection('users')
+          .doc(parentId)
+          .collection('children')
+          .get();
+
+      return snapshot.docs
+          .map((doc) => Child.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
 }
