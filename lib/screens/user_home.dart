@@ -2,7 +2,7 @@ import 'package:app_piscina_v3/models/child.dart';
 import 'package:app_piscina_v3/models/course.dart';
 import 'package:app_piscina_v3/models/user_model.dart';
 import 'package:app_piscina_v3/screens/add_child.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
 import 'package:app_piscina_v3/theme.dart';
@@ -19,7 +19,7 @@ class UserHome extends StatefulWidget {
 }
 
 class _UserHomeState extends State<UserHome> {
-  final _authService = AuthService();
+  final _authService = UserService();
   final _childService = ChildService();
   final _courseService = CourseService();
 

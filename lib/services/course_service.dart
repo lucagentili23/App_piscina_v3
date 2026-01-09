@@ -90,8 +90,9 @@ class CourseService {
       await courseRef.update({'bookedSpots': currentBooked + attendees.length});
 
       return null;
-    } catch (e) {}
-    return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<List<Map<String, dynamic>>> getBookedCourses(String userId) async {
@@ -137,6 +138,30 @@ class CourseService {
 
       return results;
     } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Attendee>> getCourseAttendees(String courseId) async {
+    try {
+      List<Attendee> attendees = [];
+
+      final querySnapshot = await _db
+          .collection('courses')
+          .doc(courseId)
+          .collection('attendees')
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var attendee in querySnapshot.docs) {
+          attendees.add(Attendee.fromMap(attendee.data(), attendee.id));
+        }
+        return attendees;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print(e);
       return [];
     }
   }

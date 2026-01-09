@@ -2,7 +2,7 @@ import 'package:app_piscina_v3/screens/admin_home.dart';
 import 'package:app_piscina_v3/screens/clients.dart';
 import 'package:app_piscina_v3/screens/courses.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +15,7 @@ class AdminLayout extends StatefulWidget {
 }
 
 class _AdminLayoutState extends State<AdminLayout> {
-  final _authService = AuthService();
+  final _authService = UserService();
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [

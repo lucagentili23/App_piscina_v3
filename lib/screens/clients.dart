@@ -1,5 +1,7 @@
+import 'package:app_piscina_v3/models/child.dart';
 import 'package:app_piscina_v3/models/user_model.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
+import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:flutter/material.dart';
 
 class Clients extends StatefulWidget {
@@ -10,7 +12,8 @@ class Clients extends StatefulWidget {
 }
 
 class _ClientsState extends State<Clients> {
-  final _authService = AuthService();
+  final _authService = UserService();
+  final _childService = ChildService();
 
   List<UserModel> _users = [];
 
@@ -72,7 +75,66 @@ class _ClientsState extends State<Clients> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         children: [
-          // Qui devo mostrare i figli
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: const Divider(),
+          ),
+          Text('Figli'),
+          FutureBuilder<List<Child>>(
+            future: _childService.getChildren(user.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text("Errore nel caricamento dei figli"),
+                );
+              }
+
+              final children = snapshot.data ?? [] as List<Child>;
+
+              if (children.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Nessun figlio registrato",
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                );
+              }
+
+              return Column(
+                children: children.map((child) {
+                  return ListTile(
+                    leading: CircleAvatar(
+                      radius: 15,
+                      backgroundImage: AssetImage(child.photoUrl),
+                    ),
+                    title: Text(child.fullName),
+
+                    contentPadding: const EdgeInsets.only(left: 32, right: 16),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(onPressed: () {}, child: Text('Disabilita')),
+                const SizedBox(width: 10),
+                ElevatedButton(onPressed: () {}, child: Text('Elimina')),
+              ],
+            ),
+          ),
         ],
       ),
     );

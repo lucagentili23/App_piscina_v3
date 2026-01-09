@@ -1,7 +1,7 @@
 import 'package:app_piscina_v3/layouts/admin_layout.dart';
 import 'package:app_piscina_v3/layouts/user_layout.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +15,7 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  final _authService = AuthService();
+  final _authService = UserService();
 
   @override
   void initState() {
@@ -28,7 +28,7 @@ class _SplashState extends State<Splash> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
-      final authService = AuthService();
+      final authService = UserService();
 
       if (user != null) {
         try {

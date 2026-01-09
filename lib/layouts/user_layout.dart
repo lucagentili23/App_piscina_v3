@@ -1,7 +1,7 @@
 import 'package:app_piscina_v3/screens/courses.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/screens/user_home.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +13,7 @@ class UserLayout extends StatefulWidget {
 }
 
 class _UserLayoutState extends State<UserLayout> {
-  final _authService = AuthService();
+  final _authService = UserService();
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [const UserHome(), const Courses()];

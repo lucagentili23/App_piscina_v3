@@ -3,7 +3,7 @@ import 'package:app_piscina_v3/models/attendee.dart';
 import 'package:app_piscina_v3/models/child.dart';
 import 'package:app_piscina_v3/models/course.dart';
 import 'package:app_piscina_v3/models/user_model.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
@@ -24,7 +24,7 @@ class CourseDetailsUser extends StatefulWidget {
 
 class _CourseDetailsUserState extends State<CourseDetailsUser> {
   final _courseService = CourseService();
-  final _authService = AuthService();
+  final _authService = UserService();
   final _childService = ChildService();
 
   Course? _course;

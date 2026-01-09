@@ -2,7 +2,7 @@ import 'package:app_piscina_v3/models/course.dart';
 import 'package:app_piscina_v3/screens/course_details_admin.dart';
 import 'package:app_piscina_v3/screens/course_details_user.dart';
 import 'package:app_piscina_v3/screens/create_course.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:app_piscina_v3/utils/general_utils.dart';
@@ -18,7 +18,7 @@ class Courses extends StatefulWidget {
 
 class _CoursesState extends State<Courses> {
   final _courseService = CourseService();
-  final _authService = AuthService();
+  final _authService = UserService();
   UserRole? _role;
   bool _isLoading = true;
 

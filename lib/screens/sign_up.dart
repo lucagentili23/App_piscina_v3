@@ -1,6 +1,6 @@
 import 'package:app_piscina_v3/layouts/user_layout.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
@@ -15,7 +15,7 @@ class SignUp extends StatefulWidget {
 }
 
 class _SigupState extends State<SignUp> {
-  final _authService = AuthService();
+  final _authService = UserService();
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();

@@ -1,6 +1,6 @@
 import 'package:app_piscina_v3/layouts/user_layout.dart';
 import 'package:app_piscina_v3/models/child.dart';
-import 'package:app_piscina_v3/services/auth_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
@@ -16,7 +16,7 @@ class AddChild extends StatefulWidget {
 }
 
 class _AddChildState extends State<AddChild> {
-  final _authService = AuthService();
+  final _authService = UserService();
   final _chilService = ChildService();
   final _formKey = GlobalKey<FormState>();
 
