@@ -40,65 +40,6 @@ class _ClientsState extends State<Clients> {
     }
   }
 
-  // Aggiungi un metodo per gestire la conferma e l'azione
-  Future<void> _handleAction(UserModel user, String action) async {
-    bool confirm =
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(
-              action == 'delete' ? 'Elimina Utente' : 'Disabilita Utente',
-            ),
-            content: Text(
-              action == 'delete'
-                  ? 'Sei sicuro di voler eliminare ${user.fullName}? Questa azione è irreversibile.'
-                  : 'Vuoi disabilitare l\'accesso per ${user.fullName}?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text('Annulla'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text('Conferma', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-
-    if (confirm) {
-      setState(() => _isLoading = true); // Mostra caricamento
-      try {
-        if (action == 'delete') {
-          await _authService.deleteUserAccount(user.id);
-          // Rimuovi l'utente dalla lista locale per aggiornare la UI
-          setState(() {
-            _users.removeWhere((u) => u.id == user.id);
-          });
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Utente eliminato')));
-        } else if (action == 'disable') {
-          // Nota: Per sapere se è già disabilitato servirebbe un campo nel UserModel,
-          // qui assumiamo di volerlo disabilitare (true).
-          // Per fare toggle servirebbe leggere lo stato auth corrente dell'utente target.
-          await _authService.toggleUserStatus(user.id, true);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Utente disabilitato')));
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Errore: $e')));
-      } finally {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -188,15 +129,9 @@ class _ClientsState extends State<Clients> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
-                  onPressed: () => _handleAction(user, 'disable'),
-                  child: Text('Disabilita'),
-                ),
+                ElevatedButton(onPressed: () {}, child: Text('Disabilita')),
                 const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () => _handleAction(user, 'delete'),
-                  child: Text('Elimina'),
-                ),
+                ElevatedButton(onPressed: () {}, child: Text('Elimina')),
               ],
             ),
           ),

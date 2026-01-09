@@ -75,30 +75,6 @@ class UserService {
     await _firebaseAuth.signOut();
   }
 
-  Future<void> toggleUserStatus(String uid, bool disabled) async {
-    try {
-      final result = await FirebaseFunctions.instance
-          .httpsCallable('toggleUserStatus')
-          .call({'uid': uid, 'disabled': disabled});
-      print(result.data);
-    } catch (e) {
-      print('Errore toggle status: $e');
-      throw e;
-    }
-  }
-
-  Future<void> deleteUserAccount(String uid) async {
-    try {
-      final result = await FirebaseFunctions.instance
-          .httpsCallable('deleteUserAccount')
-          .call({'uid': uid});
-      print(result.data);
-    } catch (e) {
-      print('Errore eliminazione: $e');
-      throw e;
-    }
-  }
-
   Future<void> _createFirestoreUser({
     required User user,
     required String email,
