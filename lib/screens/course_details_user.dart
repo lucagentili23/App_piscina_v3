@@ -60,6 +60,10 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
         );
       }
 
+      for (var attendee in attendees) {
+        print(attendee);
+      }
+
       if (mounted) {
         setState(() {
           _course = courseData;
@@ -106,10 +110,18 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
     }
   }
 
-  Future<void> _unbook(String id, bool isUser) async {
+  Future<void> _unbook(String attendeeDocId) async {
     try {
-      await _courseService.unbookFromCourse(widget.courseId, id, isUser);
-    } catch (e) {}
+      // Chiamiamo il nuovo metodo del servizio
+      await _courseService.removeAttendee(widget.courseId, attendeeDocId);
+
+      // Opzionale: ricarica i dati per aggiornare la UI
+      _loadData();
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, 'Errore durante la cancellazione', 'Ok');
+      }
+    }
   }
 
   Future<void> _bookUserDirectly() async {
@@ -177,7 +189,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
           CourseTypeBadge(text: _course!.type.name),
           const SizedBox(height: 24),
           CourseInfoCard(course: _course!),
-          if (_attendees.isNotEmpty) ...[
+          if (_attendees.isNotEmpty && _children.isNotEmpty) ...[
             const SizedBox(height: 20),
             Container(
               decoration: BoxDecoration(
@@ -209,9 +221,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                               children: [
                                 Text(attendee['displayName']),
                                 IconButton(
-                                  onPressed: attendee['isChild']
-                                      ? () => _unbook(attendee['id'], false)
-                                      : () => _unbook(attendee['id'], true),
+                                  onPressed: () => _unbook(attendee['docId']),
                                   icon: Icon(Icons.delete),
                                 ),
                               ],
@@ -220,6 +230,16 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                         );
                       },
                     ),
+                    ElevatedButton(
+                      onPressed: _handleBookingPress,
+                      child: Text(
+                        'AGGIUNGI PRENOTAZIONE',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -227,22 +247,23 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
             ),
           ],
           const SizedBox(height: 20),
-          Center(
-            child: _isBooking
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _isBooked
-                        ? _handleUnbookingPress
-                        : _handleBookingPress,
-                    child: Text(
-                      _isBooked ? 'CANCELLA PRENOTAZIONE' : 'PRENOTA POSTO',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+          if (_attendees.isEmpty)
+            Center(
+              child: _isBooking
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _isBooked
+                          ? _handleUnbookingPress
+                          : _handleBookingPress,
+                      child: Text(
+                        _isBooked ? 'CANCELLA PRENOTAZIONE' : 'PRENOTA POSTO',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-          ),
+            ),
         ],
       ),
     );
@@ -250,6 +271,15 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
 
   void _handleBookingPress() {
     if (_isBooking) return;
+
+    if (_attendees.length == _children.length + 1) {
+      showAlertDialog(
+        context,
+        'Sia tu che tutti i tuoi figli siete già iscritti a questo corso',
+        'Continua',
+      );
+      return;
+    }
 
     if (!_course!.isBookingOpen) {
       showAlertDialog(

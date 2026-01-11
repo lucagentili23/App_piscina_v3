@@ -228,6 +228,9 @@ class CourseService {
     }
   }
 
+  // In course_service.dart
+
+  // 1. Modifica getCourseAttendeesForUser per includere l'ID del documento (docId)
   Future<List<Map<String, dynamic>>> getCourseAttendeesForUser(
     String courseId,
     String userId,
@@ -246,6 +249,10 @@ class CourseService {
         for (var doc in querySnapshot.docs) {
           final Map<String, dynamic> attendee = {};
           final childId = doc.get('childId');
+
+          // Salviamo l'ID del documento Firestore, che è univoco per ogni prenotazione
+          attendee['docId'] = doc.id;
+
           if (childId != null) {
             attendee['id'] = childId;
             attendee['isChild'] = true;
@@ -263,6 +270,29 @@ class CourseService {
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<String?> removeAttendee(String courseId, String attendeeDocId) async {
+    try {
+      final courseRef = _db.collection('courses').doc(courseId);
+      final attendeeRef = courseRef.collection('attendees').doc(attendeeDocId);
+
+      // Verifichiamo che il documento esista prima di procedere
+      final docSnapshot = await attendeeRef.get();
+      if (!docSnapshot.exists) {
+        return "Prenotazione non trovata.";
+      }
+
+      // Eliminiamo il documento specifico
+      await attendeeRef.delete();
+
+      // Aggiorniamo il contatore dei posti
+      await courseRef.update({'bookedSpots': FieldValue.increment(-1)});
+
+      return null;
+    } catch (e) {
+      return e.toString();
     }
   }
 
