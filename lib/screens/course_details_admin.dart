@@ -43,7 +43,6 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
         });
       }
     } catch (e) {
-      print(e);
       if (mounted) setState(() => _isLoading = false);
     }
   }

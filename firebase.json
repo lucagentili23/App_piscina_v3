@@ -38,9 +38,7 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": [
-        "cd functions && ./node_modules/.bin/tsc"
-      ],
+      "predeploy": ["cd functions && ./node_modules/.bin/tsc"],
       "source": "functions"
     }
   ]

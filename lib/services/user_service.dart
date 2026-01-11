@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class UserService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   Stream<User?> get user {
     return _firebaseAuth.authStateChanges();
@@ -92,6 +93,7 @@ class UserService {
       'lastName': lastName,
       'gender': gender.name,
       'role': role.name,
+      'isDisabled': false,
       'createdAt': FieldValue.serverTimestamp(),
       'photoUrl': gender == Gender.m
           ? 'assets/images/Immagine_profilo_m.png'
@@ -154,6 +156,26 @@ class UserService {
       return users;
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<void> toggleUserStatus(String uid) async {
+    try {
+      await _functions.httpsCallable('toggleUserStatus').call({'uid': uid});
+    } on FirebaseFunctionsException catch (e) {
+      throw e.message ?? 'Errore durante l\'aggiornamento dello stato utente.';
+    } catch (e) {
+      throw 'Errore sconosciuto: $e';
+    }
+  }
+
+  Future<void> deleteUserAccount(String uid) async {
+    try {
+      await _functions.httpsCallable('deleteUserAccount').call({'uid': uid});
+    } on FirebaseFunctionsException catch (e) {
+      throw e.message ?? 'Errore durante l\'eliminazione dell\'utente.';
+    } catch (e) {
+      throw 'Errore sconosciuto: $e';
     }
   }
 }

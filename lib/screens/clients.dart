@@ -2,6 +2,7 @@ import 'package:app_piscina_v3/models/child.dart';
 import 'package:app_piscina_v3/models/user_model.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
+import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:flutter/material.dart';
 
 class Clients extends StatefulWidget {
@@ -16,7 +17,6 @@ class _ClientsState extends State<Clients> {
   final _childService = ChildService();
 
   List<UserModel> _users = [];
-
   bool _isLoading = true;
 
   @override
@@ -29,25 +29,122 @@ class _ClientsState extends State<Clients> {
     try {
       final users = await _authService.getUsers();
 
-      setState(() {
-        _users = users;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _users = users;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleDisable(
+    String uid,
+    String userName,
+    bool isDisabled,
+  ) async {
+    final confirm = await showConfirmDialog(
+      context,
+      isDisabled
+          ? 'Sei sicuro di voler abilitare l\'utente $userName? Da questo momento sarà in grado di accedere all\'app.'
+          : 'Sei sicuro di voler disabilitare l\'utente $userName? Non potrà più accedere all\'app.',
+    );
+
+    if (!confirm) return;
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    try {
+      await _authService.toggleUserStatus(uid);
+
+      if (mounted) {
+        Navigator.pop(context); // Chiude il loader
+        showSuccessDialog(
+          context,
+          isDisabled
+              ? 'Utente $userName abilitato con successo.'
+              : 'Utente $userName disabilitato con successo.',
+          onContinue: () {
+            setState(() {
+              _isLoading = true;
+            });
+            _getUsers();
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Chiude il loader
+        showErrorDialog(context, 'Errore: $e', 'Chiudi');
+      }
+    }
+  }
+
+  Future<void> _handleDelete(String uid, String userName) async {
+    final confirm = await showConfirmDialog(
+      context,
+      'ATTENZIONE: Stai per eliminare definitivamente $userName.\n\nVerranno cancellati:\n- L\'account di accesso\n- I dati anagrafici\n- I figli associati\n- Tutte le prenotazioni effettuate.\n\nQuesta operazione è irreversibile.',
+    );
+
+    if (!confirm) return;
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    try {
+      await _authService.deleteUserAccount(uid);
+
+      if (mounted) {
+        Navigator.pop(context); // Chiudi loader
+        showSuccessDialog(
+          context,
+          'Account eliminato definitivamente.',
+          onContinue: () {
+            // Ricarichiamo la lista per far sparire l'utente eliminato
+            setState(() {
+              _isLoading = true;
+            });
+            _getUsers();
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Chiudi loader
+        showErrorDialog(
+          context,
+          'Errore durante l\'eliminazione: $e',
+          'Chiudi',
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_users.isEmpty) {
-      return Center(child: Text('Nessun cliente ancora registrato'));
+      return const Center(child: Text('Nessun cliente ancora registrato'));
     }
 
     return Padding(
@@ -79,7 +176,10 @@ class _ClientsState extends State<Clients> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: const Divider(),
           ),
-          Text('Figli'),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8.0),
+            child: Text('Figli', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
           FutureBuilder<List<Child>>(
             future: _childService.getChildren(user.id),
             builder: (context, snapshot) {
@@ -97,14 +197,17 @@ class _ClientsState extends State<Clients> {
                 );
               }
 
-              final children = snapshot.data ?? [] as List<Child>;
+              final children = snapshot.data ?? [];
 
               if (children.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
                     "Nessun figlio registrato",
-                    style: TextStyle(fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
                   ),
                 );
               }
@@ -117,7 +220,6 @@ class _ClientsState extends State<Clients> {
                       backgroundImage: AssetImage(child.photoUrl),
                     ),
                     title: Text(child.fullName),
-
                     contentPadding: const EdgeInsets.only(left: 32, right: 16),
                   );
                 }).toList(),
@@ -125,13 +227,27 @@ class _ClientsState extends State<Clients> {
             },
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(onPressed: () {}, child: Text('Disabilita')),
-                const SizedBox(width: 10),
-                ElevatedButton(onPressed: () {}, child: Text('Elimina')),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: user.isDisabled
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                  onPressed: () =>
+                      _handleDisable(user.id, user.fullName, user.isDisabled),
+                  child: user.isDisabled
+                      ? const Text('Abilita')
+                      : const Text('Disabilita'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: () => _handleDelete(user.id, user.fullName),
+                  child: const Text('Elimina'),
+                ),
               ],
             ),
           ),

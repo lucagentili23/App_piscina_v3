@@ -97,7 +97,6 @@ class _CreateCourseState extends State<CreateCourse> {
         );
       }
     } catch (e) {
-      debugPrint("Errore durante la creazione: $e");
     } finally {
       setState(() {
         _isLoading = false;

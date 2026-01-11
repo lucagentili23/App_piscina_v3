@@ -6,6 +6,7 @@ import 'package:app_piscina_v3/models/user_model.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
+import 'package:app_piscina_v3/theme.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:app_piscina_v3/widgets/course_details/booking_modal_bottom_sheet.dart';
@@ -32,6 +33,9 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
   List<Child> _children = [];
   bool _isLoading = true;
   bool _isBooking = false;
+  bool _isBooked = false;
+
+  List<Map<String, dynamic>> _attendees = [];
 
   @override
   void initState() {
@@ -44,9 +48,16 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
       final courseData = await _courseService.getCourseById(widget.courseId);
       final userData = await _authService.getUserData();
       List<Child> children = [];
+      bool isBooked = false;
+      List<Map<String, dynamic>> attendees = [];
 
       if (userData != null) {
         children = await _childService.getChildren(userData.id);
+        isBooked = await _courseService.isBooked(userData.id, widget.courseId);
+        attendees = await _courseService.getCourseAttendeesForUser(
+          widget.courseId,
+          userData.id,
+        );
       }
 
       if (mounted) {
@@ -54,12 +65,51 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
           _course = courseData;
           _user = userData;
           _children = children;
+          _isBooked = isBooked;
+          _attendees = attendees;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _unbookUserDirectly() async {
+    setState(() {
+      _isBooking = true;
+    });
+
+    try {
+      await _courseService.unbookUserWithoutChildrenFromCourse(
+        widget.courseId,
+        _user!.id,
+      );
+
+      if (mounted) {
+        showSuccessDialog(
+          context,
+          'Prenotazione cancellata con successo!',
+          onContinue: () => Nav.replace(context, const UserLayout()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante la cancellazione della prenotazione',
+          'Continua',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isBooking = false);
+    }
+  }
+
+  Future<void> _unbook(String id, bool isUser) async {
+    try {
+      await _courseService.unbookFromCourse(widget.courseId, id, isUser);
+    } catch (e) {}
   }
 
   Future<void> _bookUserDirectly() async {
@@ -84,11 +134,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
       }
     } catch (e) {
       if (mounted) {
-        showErrorDialog(
-          context,
-          'Errore durante la prenotazione: ${e.toString()}',
-          'Continua',
-        );
+        showErrorDialog(context, 'Errore durante la prenotazione', 'Continua');
       }
     } finally {
       if (mounted) setState(() => _isBooking = false);
@@ -131,14 +177,65 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
           CourseTypeBadge(text: _course!.type.name),
           const SizedBox(height: 24),
           CourseInfoCard(course: _course!),
+          if (_attendees.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                color: AppTheme.lightSecondaryColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Text(
+                      'Le tue iscrizioni:',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    const SizedBox(height: 10),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _attendees.length,
+                      itemBuilder: (context, index) {
+                        final attendee = _attendees[index];
+
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(attendee['displayName']),
+                                IconButton(
+                                  onPressed: attendee['isChild']
+                                      ? () => _unbook(attendee['id'], false)
+                                      : () => _unbook(attendee['id'], true),
+                                  icon: Icon(Icons.delete),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           Center(
             child: _isBooking
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: _handleBookingPress,
-                    child: const Text(
-                      'PRENOTA POSTO',
+                    onPressed: _isBooked
+                        ? _handleUnbookingPress
+                        : _handleBookingPress,
+                    child: Text(
+                      _isBooked ? 'CANCELLA PRENOTAZIONE' : 'PRENOTA POSTO',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -165,6 +262,21 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
 
     if (_children.isEmpty) {
       _bookUserDirectly();
+    } else {
+      BookingModalBottomSheet.show(
+        context,
+        courseId: widget.courseId,
+        user: _user!,
+        children: _children,
+      );
+    }
+  }
+
+  void _handleUnbookingPress() {
+    if (_isBooking) return;
+
+    if (_children.isEmpty) {
+      _unbookUserDirectly();
     } else {
       BookingModalBottomSheet.show(
         context,

@@ -4,6 +4,7 @@ import 'package:app_piscina_v3/screens/course_details_user.dart';
 import 'package:app_piscina_v3/screens/create_course.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
+import 'package:app_piscina_v3/theme.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:app_piscina_v3/utils/general_utils.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
@@ -114,7 +115,7 @@ class _CoursesState extends State<Courses> {
         child: ListTile(
           leading: Container(
             decoration: BoxDecoration(
-              color: Colors.orange[100],
+              color: AppTheme.lightSecondaryColor,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Padding(

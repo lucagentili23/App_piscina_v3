@@ -95,6 +95,92 @@ class CourseService {
     }
   }
 
+  Future<String?> unbookUserWithoutChildrenFromCourse(
+    String courseId,
+    String userId,
+  ) async {
+    try {
+      final courseRef = _db.collection('courses').doc(courseId);
+
+      final courseSnapshot = await courseRef.get();
+
+      if (!courseSnapshot.exists) {
+        throw 'Il corso non esiste più.';
+      }
+      final currentBooked = courseSnapshot.get('bookedSpots');
+
+      final querySnapshot = await courseRef
+          .collection('attendees')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      await courseRef.update({'bookedSpots': currentBooked - 1});
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<String?> unbookFromCourse(
+    String courseId,
+    String id,
+    bool? isUser,
+  ) async {
+    try {
+      final courseRef = _db.collection('courses').doc(courseId);
+
+      Query query = courseRef.collection('attendees');
+
+      if (isUser == true) {
+        query = query
+            .where('userId', isEqualTo: id)
+            .where('childId', isEqualTo: null);
+      } else {
+        query = query.where('childId', isEqualTo: id);
+      }
+
+      final querySnapshot = await query.get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return "Nessuna prenotazione trovata.";
+      }
+
+      for (var doc in querySnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      courseRef.update({'bookedSpots': FieldValue.increment(-1)});
+
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<bool> isBooked(String userId, String courseId) async {
+    try {
+      final courseRef = await _db
+          .collection('courses')
+          .doc(courseId)
+          .collection('attendees')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      if (courseRef.docs.isNotEmpty) {
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getBookedCourses(String userId) async {
     try {
       final querySnapshot = await _db
@@ -142,6 +228,44 @@ class CourseService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getCourseAttendeesForUser(
+    String courseId,
+    String userId,
+  ) async {
+    try {
+      List<Map<String, dynamic>> attendees = [];
+
+      final querySnapshot = await _db
+          .collection('courses')
+          .doc(courseId)
+          .collection('attendees')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var doc in querySnapshot.docs) {
+          final Map<String, dynamic> attendee = {};
+          final childId = doc.get('childId');
+          if (childId != null) {
+            attendee['id'] = childId;
+            attendee['isChild'] = true;
+            attendee['displayName'] = doc.get('displayName');
+          } else {
+            attendee['id'] = doc.get('userId');
+            attendee['isChild'] = false;
+            attendee['displayName'] = doc.get('displayName');
+          }
+          attendees.add(attendee);
+        }
+
+        return attendees;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<List<Attendee>> getCourseAttendees(String courseId) async {
     try {
       List<Attendee> attendees = [];
@@ -161,7 +285,6 @@ class CourseService {
         return [];
       }
     } catch (e) {
-      print(e);
       return [];
     }
   }

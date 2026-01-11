@@ -8,6 +8,7 @@ class UserModel {
   final Gender gender;
   final String photoUrl;
   final UserRole role;
+  final bool isDisabled;
 
   UserModel({
     required this.id,
@@ -17,6 +18,7 @@ class UserModel {
     required this.gender,
     required this.photoUrl,
     this.role = UserRole.user,
+    this.isDisabled = false,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -28,6 +30,7 @@ class UserModel {
       gender: data['gender'] == 'm' ? Gender.m : Gender.f,
       photoUrl: data['photoUrl'] ?? '',
       role: data['role'] == 'admin' ? UserRole.admin : UserRole.user,
+      isDisabled: data['isDisabled'] ?? false,
     );
   }
 
@@ -39,6 +42,7 @@ class UserModel {
       'gender': gender.name,
       'photoUrl': photoUrl,
       'role': role == UserRole.admin ? 'admin' : 'user',
+      'isDisabled': isDisabled,
     };
   }
 
