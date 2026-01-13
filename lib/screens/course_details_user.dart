@@ -35,7 +35,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
   bool _isBooking = false;
   bool _isBooked = false;
 
-  List<Map<String, dynamic>> _attendees = [];
+  List<Attendee> _attendees = [];
 
   @override
   void initState() {
@@ -49,7 +49,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
       final userData = await _authService.getUserData();
       List<Child> children = [];
       bool isBooked = false;
-      List<Map<String, dynamic>> attendees = [];
+      List<Attendee> attendees = [];
 
       if (userData != null) {
         children = await _childService.getChildren(userData.id);
@@ -58,10 +58,6 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
           widget.courseId,
           userData.id,
         );
-      }
-
-      for (var attendee in attendees) {
-        print(attendee);
       }
 
       if (mounted) {
@@ -79,43 +75,10 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
     }
   }
 
-  Future<void> _unbookUserDirectly() async {
-    setState(() {
-      _isBooking = true;
-    });
-
-    try {
-      await _courseService.unbookUserWithoutChildrenFromCourse(
-        widget.courseId,
-        _user!.id,
-      );
-
-      if (mounted) {
-        showSuccessDialog(
-          context,
-          'Prenotazione cancellata con successo!',
-          onContinue: () => Nav.replace(context, const UserLayout()),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        showErrorDialog(
-          context,
-          'Errore durante la cancellazione della prenotazione',
-          'Continua',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isBooking = false);
-    }
-  }
-
   Future<void> _unbook(String attendeeDocId) async {
     try {
-      // Chiamiamo il nuovo metodo del servizio
       await _courseService.removeAttendee(widget.courseId, attendeeDocId);
 
-      // Opzionale: ricarica i dati per aggiornare la UI
       _loadData();
     } catch (e) {
       if (mounted) {
@@ -219,9 +182,9 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(attendee['displayName']),
+                                Text(attendee.displayedName),
                                 IconButton(
-                                  onPressed: () => _unbook(attendee['docId']),
+                                  onPressed: () => _unbook(attendee.id),
                                   icon: Icon(Icons.delete),
                                 ),
                               ],
@@ -247,14 +210,27 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
             ),
           ],
           const SizedBox(height: 20),
-          if (_attendees.isEmpty)
+          if (_attendees.isEmpty && _children.isEmpty)
             Center(
               child: _isBooking
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
-                      onPressed: _isBooked
-                          ? _handleUnbookingPress
-                          : _handleBookingPress,
+                      onPressed: _isBooked ? null : _handleBookingPress,
+                      child: Text(
+                        'PRENOTA POSTO',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+            ),
+          if (_attendees.isNotEmpty && _children.isEmpty)
+            Center(
+              child: _isBooking
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () => _unbook(_attendees[0].id),
                       child: Text(
                         _isBooked ? 'CANCELLA PRENOTAZIONE' : 'PRENOTA POSTO',
                         style: TextStyle(
@@ -271,7 +247,6 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
 
   void _handleBookingPress() {
     if (_isBooking) return;
-
     if (_attendees.length == _children.length + 1) {
       showAlertDialog(
         context,
@@ -298,21 +273,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
         courseId: widget.courseId,
         user: _user!,
         children: _children,
-      );
-    }
-  }
-
-  void _handleUnbookingPress() {
-    if (_isBooking) return;
-
-    if (_children.isEmpty) {
-      _unbookUserDirectly();
-    } else {
-      BookingModalBottomSheet.show(
-        context,
-        courseId: widget.courseId,
-        user: _user!,
-        children: _children,
+        bookedAttendees: _attendees,
       );
     }
   }

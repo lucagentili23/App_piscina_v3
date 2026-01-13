@@ -228,15 +228,12 @@ class CourseService {
     }
   }
 
-  // In course_service.dart
-
-  // 1. Modifica getCourseAttendeesForUser per includere l'ID del documento (docId)
-  Future<List<Map<String, dynamic>>> getCourseAttendeesForUser(
+  Future<List<Attendee>> getCourseAttendeesForUser(
     String courseId,
     String userId,
   ) async {
     try {
-      List<Map<String, dynamic>> attendees = [];
+      List<Attendee> attendees = [];
 
       final querySnapshot = await _db
           .collection('courses')
@@ -247,22 +244,27 @@ class CourseService {
 
       if (querySnapshot.docs.isNotEmpty) {
         for (var doc in querySnapshot.docs) {
-          final Map<String, dynamic> attendee = {};
           final childId = doc.get('childId');
 
-          // Salviamo l'ID del documento Firestore, che è univoco per ogni prenotazione
-          attendee['docId'] = doc.id;
-
           if (childId != null) {
-            attendee['id'] = childId;
-            attendee['isChild'] = true;
-            attendee['displayName'] = doc.get('displayName');
+            final attendee = Attendee(
+              id: doc.id,
+              userId: userId,
+              displayedName: doc.get('displayName'),
+              childId: childId,
+              displayedPhotoUrl: doc.get('photoUrl'),
+            );
+            attendees.add(attendee);
           } else {
-            attendee['id'] = doc.get('userId');
-            attendee['isChild'] = false;
-            attendee['displayName'] = doc.get('displayName');
+            final attendee = Attendee(
+              id: doc.id,
+              userId: userId,
+              displayedName: doc.get('displayName'),
+              childId: null,
+              displayedPhotoUrl: doc.get('photoUrl'),
+            );
+            attendees.add(attendee);
           }
-          attendees.add(attendee);
         }
 
         return attendees;
@@ -292,6 +294,7 @@ class CourseService {
 
       return null;
     } catch (e) {
+      print(e);
       return e.toString();
     }
   }

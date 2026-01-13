@@ -51,14 +51,14 @@ class _SplashState extends State<Splash> {
           Nav.replace(context, SignIn());
         }
       } else {
-        if (!mounted) return;
-
-        Nav.replace(context, SignIn());
+        if (mounted) {
+          Nav.replace(context, SignIn());
+        }
       }
     } catch (e) {
-      if (!mounted) return;
-
-      Nav.replace(context, SignIn());
+      if (mounted) {
+        Nav.replace(context, SignIn());
+      }
     }
   }
 

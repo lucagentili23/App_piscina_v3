@@ -11,12 +11,14 @@ class BookingModalBottomSheet extends StatefulWidget {
   final String courseId;
   final UserModel user;
   final List<Child> children;
+  final List<Attendee> bookedAttendees;
 
   const BookingModalBottomSheet({
     super.key,
     required this.courseId,
     required this.user,
     required this.children,
+    required this.bookedAttendees,
   });
 
   static void show(
@@ -24,6 +26,7 @@ class BookingModalBottomSheet extends StatefulWidget {
     required String courseId,
     required UserModel user,
     required List<Child> children,
+    required List<Attendee> bookedAttendees,
   }) {
     showModalBottomSheet(
       context: context,
@@ -35,6 +38,7 @@ class BookingModalBottomSheet extends StatefulWidget {
         courseId: courseId,
         user: user,
         children: children,
+        bookedAttendees: bookedAttendees,
       ),
     );
   }
@@ -53,11 +57,11 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
     setState(() => _isBooking = true);
 
     try {
-      List<Attendee> attendees = [];
+      List<Attendee> attendeesToBook = [];
 
       for (String id in _selectedIds) {
         if (id == widget.user.id) {
-          attendees.add(
+          attendeesToBook.add(
             Attendee(
               id: '',
               userId: widget.user.id,
@@ -67,7 +71,7 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
           );
         } else {
           final child = widget.children.firstWhere((c) => c.id == id);
-          attendees.add(
+          attendeesToBook.add(
             Attendee(
               id: '',
               userId: widget.user.id,
@@ -79,7 +83,7 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
         }
       }
 
-      await _courseService.bookCourse(widget.courseId, attendees);
+      await _courseService.bookCourse(widget.courseId, attendeesToBook);
 
       if (mounted) {
         showSuccessDialog(
@@ -99,6 +103,14 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // Verifichiamo se il genitore è già prenotato
+    final isParentBooked = widget.bookedAttendees.any((a) => a.childId == null);
+
+    // Filtriamo la lista dei figli per mostrare solo quelli NON prenotati
+    final availableChildren = widget.children.where((child) {
+      return !widget.bookedAttendees.any((a) => a.childId == child.id);
+    }).toList();
+
     return Container(
       padding: const EdgeInsets.all(20),
       constraints: BoxConstraints(
@@ -121,44 +133,51 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          Expanded(
-            child: ListView(
-              children: [
-                // Sezione Genitore
-                CheckboxListTile(
-                  secondary: const Icon(Icons.person),
-                  title: Text("${widget.user.firstName} (Io)"),
-                  value: _selectedIds.contains(widget.user.id),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        _selectedIds.add(widget.user.id);
-                      } else {
-                        _selectedIds.remove(widget.user.id);
-                      }
-                    });
-                  },
-                ),
-                // Sezione Figli
-                ...widget.children.map((child) {
-                  return CheckboxListTile(
-                    secondary: const Icon(Icons.child_care),
-                    title: Text(child.firstName),
-                    value: _selectedIds.contains(child.id),
-                    onChanged: (bool? value) {
-                      setState(() {
-                        if (value == true) {
-                          _selectedIds.add(child.id);
-                        } else {
-                          _selectedIds.remove(child.id);
-                        }
-                      });
-                    },
-                  );
-                }),
-              ],
+          if (availableChildren.isEmpty && isParentBooked)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text("Tutti i membri della famiglia sono già iscritti."),
+            )
+          else
+            Expanded(
+              child: ListView(
+                children: [
+                  // Mostra il genitore solo se non è già prenotato
+                  if (!isParentBooked)
+                    CheckboxListTile(
+                      secondary: const Icon(Icons.person),
+                      title: Text("${widget.user.firstName} (Io)"),
+                      value: _selectedIds.contains(widget.user.id),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedIds.add(widget.user.id);
+                          } else {
+                            _selectedIds.remove(widget.user.id);
+                          }
+                        });
+                      },
+                    ),
+                  // Mostra solo i figli non prenotati
+                  ...availableChildren.map((child) {
+                    return CheckboxListTile(
+                      secondary: const Icon(Icons.child_care),
+                      title: Text(child.firstName),
+                      value: _selectedIds.contains(child.id),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedIds.add(child.id);
+                          } else {
+                            _selectedIds.remove(child.id);
+                          }
+                        });
+                      },
+                    );
+                  }),
+                ],
+              ),
             ),
-          ),
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
