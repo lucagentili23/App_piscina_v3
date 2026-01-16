@@ -1,6 +1,7 @@
 import 'package:app_piscina_v3/screens/admin_home.dart';
 import 'package:app_piscina_v3/screens/clients.dart';
 import 'package:app_piscina_v3/screens/courses.dart';
+import 'package:app_piscina_v3/screens/notifications.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
@@ -47,12 +48,23 @@ class _AdminLayoutState extends State<AdminLayout> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
+        centerTitle: true,
         actions: [
-          if (_selectedIndex == 0)
+          if (_selectedIndex == 0) ...[
+            IconButton(
+              onPressed: () => Nav.to(context, const Notifications()),
+              icon: Badge(
+                smallSize: 10,
+                isLabelVisible: true,
+                backgroundColor: Colors.red,
+                child: Icon(Icons.notifications_outlined),
+              ),
+            ),
             IconButton(
               onPressed: () => _signOut(),
               icon: Icon(Icons.exit_to_app),
             ),
+          ],
         ],
       ),
 

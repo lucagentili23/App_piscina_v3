@@ -64,7 +64,11 @@ class _CoursesState extends State<Courses> {
               return Center(
                 child: Text(
                   'Nessun corso ancora disponibile',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               );
             }

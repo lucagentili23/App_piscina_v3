@@ -31,10 +31,16 @@ class CourseService {
     }
   }
 
+  // Crea casini? se usassi un metodo non straem e facessi aggiornare la pagina?
+  // Es. su youtube se caricano un video nuovo non c'è lo stream
   Stream<List<Course>> getCoursesStream() {
+    DateTime now = DateTime.now();
+    DateTime todayStart = DateTime(now.year, now.month, now.day);
+    Timestamp startTimestamp = Timestamp.fromDate(todayStart);
+
     return _db
         .collection('courses')
-        .where('date', isGreaterThan: Timestamp.now())
+        .where('date', isGreaterThanOrEqualTo: startTimestamp)
         .orderBy('date')
         .snapshots()
         .map((snapshot) {
@@ -68,57 +74,22 @@ class CourseService {
       if (!courseSnapshot.exists) {
         throw 'Il corso non esiste più.';
       }
+
       final currentBooked = courseSnapshot.get('bookedSpots');
       final maxSpots = courseSnapshot.get('maxSpots');
 
       if (maxSpots != null && (currentBooked + attendees.length) > maxSpots) {
-        throw 'Posti insufficienti. Rimangono ${maxSpots - currentBooked} posti.';
+        throw 'Posti insufficienti.';
       }
 
       for (var attendee in attendees) {
         final attendeeRef = courseRef.collection('attendees').doc();
+        final data = attendee.toMap();
 
-        await attendeeRef.set({
-          'userId': attendee.userId,
-          'childId': attendee.childId,
-          'displayName': attendee.displayedName,
-          'photoUrl': attendee.displayedPhotoUrl,
-          'bookedAt': FieldValue.serverTimestamp(),
-        });
+        await attendeeRef.set(data);
       }
 
       await courseRef.update({'bookedSpots': currentBooked + attendees.length});
-
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Future<String?> unbookUserWithoutChildrenFromCourse(
-    String courseId,
-    String userId,
-  ) async {
-    try {
-      final courseRef = _db.collection('courses').doc(courseId);
-
-      final courseSnapshot = await courseRef.get();
-
-      if (!courseSnapshot.exists) {
-        throw 'Il corso non esiste più.';
-      }
-      final currentBooked = courseSnapshot.get('bookedSpots');
-
-      final querySnapshot = await courseRef
-          .collection('attendees')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (var doc in querySnapshot.docs) {
-        await doc.reference.delete();
-      }
-
-      await courseRef.update({'bookedSpots': currentBooked - 1});
 
       return null;
     } catch (e) {
@@ -195,7 +166,7 @@ class CourseService {
       for (var doc in querySnapshot.docs) {
         final courseId = doc.reference.parent.parent!.id;
         final data = doc.data();
-        final name = data['displayName'];
+        final name = data['displayedName'];
 
         if (!courseAttendeesMap.containsKey(courseId)) {
           courseAttendeesMap[courseId] = [];
@@ -250,18 +221,18 @@ class CourseService {
             final attendee = Attendee(
               id: doc.id,
               userId: userId,
-              displayedName: doc.get('displayName'),
+              displayedName: doc.get('displayedName'),
               childId: childId,
-              displayedPhotoUrl: doc.get('photoUrl'),
+              displayedPhotoUrl: doc.get('displayedPhotoUrl'),
             );
             attendees.add(attendee);
           } else {
             final attendee = Attendee(
               id: doc.id,
               userId: userId,
-              displayedName: doc.get('displayName'),
+              displayedName: doc.get('displayedName'),
               childId: null,
-              displayedPhotoUrl: doc.get('photoUrl'),
+              displayedPhotoUrl: doc.get('displayedPhotoUrl'),
             );
             attendees.add(attendee);
           }
@@ -275,31 +246,27 @@ class CourseService {
     }
   }
 
-  Future<String?> removeAttendee(String courseId, String attendeeDocId) async {
+  Future<bool> removeAttendee(String courseId, String attendeeDocId) async {
     try {
       final courseRef = _db.collection('courses').doc(courseId);
       final attendeeRef = courseRef.collection('attendees').doc(attendeeDocId);
 
-      // Verifichiamo che il documento esista prima di procedere
       final docSnapshot = await attendeeRef.get();
       if (!docSnapshot.exists) {
-        return "Prenotazione non trovata.";
+        return false;
       }
 
-      // Eliminiamo il documento specifico
       await attendeeRef.delete();
 
-      // Aggiorniamo il contatore dei posti
       await courseRef.update({'bookedSpots': FieldValue.increment(-1)});
 
-      return null;
+      return true;
     } catch (e) {
-      print(e);
-      return e.toString();
+      return false;
     }
   }
 
-  Future<List<Attendee>> getCourseAttendees(String courseId) async {
+  Future<List<Attendee>> getCourseAttendeesForAdmin(String courseId) async {
     try {
       List<Attendee> attendees = [];
 
@@ -317,6 +284,29 @@ class CourseService {
       } else {
         return [];
       }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Course>> getDailyCourses() async {
+    try {
+      final now = DateTime.now();
+
+      final startOfDay = DateTime(now.year, now.month, now.day);
+
+      final endOfDay = startOfDay.add(const Duration(days: 1));
+
+      final querySnapshot = await _db
+          .collection('courses')
+          .where('date', isGreaterThanOrEqualTo: startOfDay)
+          .where('date', isLessThan: endOfDay)
+          .orderBy('date')
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => Course.fromMap(doc.data(), doc.id))
+          .toList();
     } catch (e) {
       return [];
     }

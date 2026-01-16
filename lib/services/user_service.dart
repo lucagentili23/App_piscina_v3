@@ -9,9 +9,7 @@ class UserService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
-  Stream<User?> get user {
-    return _firebaseAuth.authStateChanges();
-  }
+  Stream<User?> get user => _firebaseAuth.authStateChanges();
 
   User? get currentUser => _firebaseAuth.currentUser;
 
@@ -176,6 +174,45 @@ class UserService {
       throw e.message ?? 'Errore durante l\'eliminazione dell\'utente.';
     } catch (e) {
       throw 'Errore sconosciuto: $e';
+    }
+  }
+
+  Future<List<UserModel>> getAdmins(String adminId) async {
+    try {
+      List<UserModel> admins = [];
+
+      final querySnapshot = await _db
+          .collection('users')
+          .where('role', isEqualTo: 'admin')
+          .where('id', isNotEqualTo: adminId)
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        admins.add(UserModel.fromMap(doc.data(), doc.id));
+      }
+
+      return admins;
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+
+  Future<bool> makeAdmin(String userId) async {
+    try {
+      await _db.collection('users').doc(userId).update({'role': 'admin'});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> makeUser(String userId) async {
+    try {
+      await _db.collection('users').doc(userId).update({'role': 'user'});
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

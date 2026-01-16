@@ -1,0 +1,19 @@
+- [ ] Oridna lista clienti in ordine alfabetico per admin
+- [ ] Controlla i try e catch e che gestiscano correttamente gli errori
+- [ ] Controlla se ci sono metodi helper nelle schermate da trasformare in classi
+- [ ] Controlla se ci sono metodi helper o aree di codice unificabili o riutilizzabili
+- [ ] Coerenza di testi, font ecc
+- [ ] Verifica che i testi siano allineati centralmente dove necessario (textAlign: TextAlign.center)
+- [ ] Quando un utente viene disabilitato o eliminato deve venire fatto il logout
+- [ ] Se non c'è rete notifica opportunamente con gli errori
+- [ ] Overflow pulsanti schermata clienti
+- [ ] Contorlla e sistema eventuali problemi di oerflow nelle schermate
+- [ ] Controlla dimensioni pulsanti e altri widgets (rendile uguali)
+- [ ] Aggiorna le pagine dopo ogni operazione che necessita di aggiornamento
+- [ ] Rendi pagine aggiornabili dove necessario
+- [ ] Verifica che durante i caricamenti non si possano effettuare altre operazioni
+- [ ] Sistema colore icona corso tra sezione corsi e user home (in user home è più scuro)
+- [ ] Controlla che ci siano i dispose dove ci sono campi di inserimeto testo o simili
+- [ ] Controlla che si smetta di ascoltare dove ci sono stream di dati
+- [ ] controlla se vale la pena mantenere gli stream dove creati
+- [ ] Cerca di otimizzare le chiamate al db (usa batch dove necessario)

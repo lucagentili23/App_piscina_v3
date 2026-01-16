@@ -77,9 +77,20 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
 
   Future<void> _unbook(String attendeeDocId) async {
     try {
-      await _courseService.removeAttendee(widget.courseId, attendeeDocId);
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+      final outcome = await _courseService.removeAttendee(
+        widget.courseId,
+        attendeeDocId,
+      );
 
-      _loadData();
+      if (outcome && mounted) {
+        Navigator.pop(context);
+        _loadData();
+      }
     } catch (e) {
       if (mounted) {
         showErrorDialog(context, 'Errore durante la cancellazione', 'Ok');
@@ -211,6 +222,21 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
           ],
           const SizedBox(height: 20),
           if (_attendees.isEmpty && _children.isEmpty)
+            Center(
+              child: _isBooking
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _isBooked ? null : _handleBookingPress,
+                      child: Text(
+                        'PRENOTA POSTO',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+            ),
+          if (_attendees.isEmpty && _children.isNotEmpty)
             Center(
               child: _isBooking
                   ? const CircularProgressIndicator()

@@ -31,7 +31,7 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
   Future<void> _loadData() async {
     try {
       final courseData = await _courseService.getCourseById(widget.courseId);
-      final attendees = await _courseService.getCourseAttendees(
+      final attendees = await _courseService.getCourseAttendeesForAdmin(
         widget.courseId,
       );
 

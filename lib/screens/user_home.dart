@@ -3,10 +3,12 @@ import 'package:app_piscina_v3/models/course.dart';
 import 'package:app_piscina_v3/models/user_model.dart';
 import 'package:app_piscina_v3/screens/add_child.dart';
 import 'package:app_piscina_v3/screens/course_details_user.dart';
+import 'package:app_piscina_v3/screens/edit_child.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
 import 'package:app_piscina_v3/theme.dart';
+import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:app_piscina_v3/utils/general_utils.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
@@ -38,6 +40,9 @@ class _UserHomeState extends State<UserHome> {
 
   Future<void> _loadData() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
       final user = await _authService.getUserData();
       List<Child> children = [];
       List<Map<String, dynamic>> bookedData = [];
@@ -57,6 +62,51 @@ class _UserHomeState extends State<UserHome> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _deleteChild(String childId) async {
+    try {
+      final confirm = await showConfirmDialog(
+        context,
+        'Sei sicuro di voler rimuovere il figlio selezionato?\nVerrà rimosso da tutti i corsi a cui è iscritto',
+      );
+
+      if (!confirm) return;
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final outcome = await _childService.deleteChild(
+        _authService.currentUser!.uid,
+        childId,
+      );
+
+      if (outcome && mounted) {
+        Navigator.pop(context);
+
+        showSuccessDialog(
+          context,
+          'Figlio rimosso con successo',
+          onContinue: () => setState(() {
+            _loadData();
+          }),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante la rimozione del figlio',
+          'Continua',
+        );
+      }
     }
   }
 
@@ -84,63 +134,40 @@ class _UserHomeState extends State<UserHome> {
     return SingleChildScrollView(
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: AssetImage(_user!.photoUrl),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _user!.gender == Gender.m
-                    ? "Bentornato ${_user!.firstName}!"
-                    : "Bentornata ${_user!.firstName}!",
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              _children.isEmpty
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Hai dei figli da iscrivere?'),
-                        TextButton(
-                          onPressed: () => Nav.to(context, const AddChild()),
-                          child: Text('Clicca qui'),
-                        ),
-                      ],
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightSecondaryColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              "I tuoi figli registrati:",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            ..._children.map(
-                              (child) => _buildChildHeader(child),
-                            ),
-                            TextButton.icon(
-                              onPressed: () =>
-                                  Nav.to(context, const AddChild()),
-                              icon: const Icon(Icons.add),
-                              label: const Text("Aggiungi"),
-                            ),
-                          ],
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundImage: AssetImage(_user!.photoUrl),
+                  ),
+                  const SizedBox(width: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Bentornato,',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
+                      Text(
+                        _user!.firstName,
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               const Text(
                 "Le tue prenotazioni",
@@ -164,7 +191,7 @@ class _UserHomeState extends State<UserHome> {
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 3,
+                    elevation: 4,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Column(
@@ -235,6 +262,40 @@ class _UserHomeState extends State<UserHome> {
                     ),
                   );
                 }),
+              const Divider(),
+              _children.isEmpty
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Hai dei figli da iscrivere?'),
+                        TextButton(
+                          onPressed: () => Nav.to(context, const AddChild()),
+                          child: Text('Clicca qui'),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "I tuoi figli registrati:",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ..._children.map((child) => _buildChildHeader(child)),
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: () => Nav.to(context, const AddChild()),
+                            icon: const Icon(Icons.add),
+                            label: const Text("Aggiungi"),
+                          ),
+                        ),
+                      ],
+                    ),
+              //SE VAI SUI CORSI PER IL CLIENTE CON FIGLI NON SI VEDE L'OPZIONE PRENOTA
             ],
           ),
         ),
@@ -245,6 +306,8 @@ class _UserHomeState extends State<UserHome> {
   Widget _buildChildHeader(Child child) {
     return Card(
       elevation: 4,
+
+      margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -268,12 +331,12 @@ class _UserHomeState extends State<UserHome> {
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () => Nav.to(context, EditChild(childId: child.id)),
               icon: Icon(Icons.edit),
               color: Colors.grey[700],
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () => _deleteChild(child.id),
               icon: Icon(Icons.delete),
               color: Colors.grey[700],
             ),

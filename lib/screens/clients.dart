@@ -13,7 +13,7 @@ class Clients extends StatefulWidget {
 }
 
 class _ClientsState extends State<Clients> {
-  final _authService = UserService();
+  final _userService = UserService();
   final _childService = ChildService();
 
   List<UserModel> _users = [];
@@ -27,7 +27,7 @@ class _ClientsState extends State<Clients> {
 
   Future<void> _getUsers() async {
     try {
-      final users = await _authService.getUsers();
+      final users = await _userService.getUsers();
 
       if (mounted) {
         setState(() {
@@ -40,6 +40,58 @@ class _ClientsState extends State<Clients> {
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  Future<void> _makeAdmin(String userId, String userName) async {
+    try {
+      final confirm = await showConfirmDialog(
+        context,
+        'Sei sicuro di voler rendere amministratore l\'utente $userName?',
+      );
+
+      if (!confirm) return;
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final outcome = await _userService.makeAdmin(userId);
+
+      if (outcome && mounted) {
+        Navigator.pop(context);
+        showSuccessDialog(
+          context,
+          'Operazione eseguita correttamente',
+          onContinue: () {
+            setState(() {
+              _isLoading = true;
+            });
+            _getUsers();
+          },
+        );
+      }
+
+      if (!outcome && mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante l\'esecuzione dell\'operazione',
+          'Continua',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante l\'esecuzione dell\'operazione',
+          'Continua',
+        );
       }
     }
   }
@@ -67,7 +119,7 @@ class _ClientsState extends State<Clients> {
     }
 
     try {
-      await _authService.toggleUserStatus(uid);
+      await _userService.toggleUserStatus(uid);
 
       if (mounted) {
         Navigator.pop(context); // Chiude il loader
@@ -87,7 +139,7 @@ class _ClientsState extends State<Clients> {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context); // Chiude il loader
-        showErrorDialog(context, 'Errore: $e', 'Chiudi');
+        showErrorDialog(context, 'Errore', 'Chiudi');
       }
     }
   }
@@ -109,7 +161,7 @@ class _ClientsState extends State<Clients> {
     }
 
     try {
-      await _authService.deleteUserAccount(uid);
+      await _userService.deleteUserAccount(uid);
 
       if (mounted) {
         Navigator.pop(context); // Chiudi loader
@@ -128,11 +180,7 @@ class _ClientsState extends State<Clients> {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context); // Chiudi loader
-        showErrorDialog(
-          context,
-          'Errore durante l\'eliminazione: $e',
-          'Chiudi',
-        );
+        showErrorDialog(context, 'Errore durante l\'eliminazione', 'Chiudi');
       }
     }
   }
@@ -144,7 +192,16 @@ class _ClientsState extends State<Clients> {
     }
 
     if (_users.isEmpty) {
-      return const Center(child: Text('Nessun cliente ancora registrato'));
+      return Center(
+        child: Text(
+          'Nessun cliente ancora registrato',
+          style: TextStyle(
+            fontSize: 16,
+            fontStyle: FontStyle.italic,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      );
     }
 
     return Padding(
@@ -159,6 +216,10 @@ class _ClientsState extends State<Clients> {
   }
 
   Widget _buildUserCard(UserModel user) {
+    final bool isDisabled = user.isDisabled;
+    final Color statusColor = isDisabled ? Colors.orange : Colors.green;
+    final String statusText = isDisabled ? 'DISABILITATO' : 'ABILITATO';
+
     return Card(
       elevation: 4,
       child: ExpansionTile(
@@ -170,6 +231,31 @@ class _ClientsState extends State<Clients> {
         title: Text(
           user.fullName,
           style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                border: Border.all(
+                  color: statusColor.withValues(alpha: 0.5),
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                statusText,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
         ),
         children: [
           Padding(
@@ -228,8 +314,10 @@ class _ClientsState extends State<Clients> {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              spacing: 8.0,
+              runSpacing: 8.0,
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -242,6 +330,11 @@ class _ClientsState extends State<Clients> {
                   child: user.isDisabled
                       ? const Text('Abilita')
                       : const Text('Disabilita'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: () => _makeAdmin(user.id, user.fullName),
+                  child: const Text('Rendi amministratore'),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),

@@ -11,40 +11,58 @@ class ViewAttendees extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Partecipanti')),
-      body: ListView.builder(
-        itemCount: attendees.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: Padding(
-              padding: EdgeInsets.all(5),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 15,
-                        backgroundImage: AssetImage(
-                          attendees[index].displayedPhotoUrl,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        attendees[index].displayedName,
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ],
+      body: attendees.isEmpty
+          ? Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Center(
+                child: Text(
+                  'Ancora nessun partecipante per questo corso',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade600,
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.delete, color: AppTheme.secondaryColor),
-                  ),
-                ],
+                ),
               ),
+            )
+          : ListView.builder(
+              itemCount: attendees.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 15,
+                              backgroundImage: AssetImage(
+                                attendees[index].displayedPhotoUrl,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              attendees[index].displayedName,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(
+                            Icons.delete,
+                            color: AppTheme.secondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

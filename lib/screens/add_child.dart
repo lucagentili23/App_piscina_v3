@@ -17,7 +17,7 @@ class AddChild extends StatefulWidget {
 
 class _AddChildState extends State<AddChild> {
   final _authService = UserService();
-  final _chilService = ChildService();
+  final _childService = ChildService();
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -67,7 +67,7 @@ class _AddChildState extends State<AddChild> {
         gender: _selectedValue,
       );
 
-      await _chilService.addChild(_authService.currentUser!.uid, child);
+      await _childService.addChild(_authService.currentUser!.uid, child);
 
       if (mounted) {
         showSuccessDialog(

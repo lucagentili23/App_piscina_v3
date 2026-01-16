@@ -1,3 +1,13 @@
+import 'package:app_piscina_v3/models/course.dart';
+import 'package:app_piscina_v3/models/user_model.dart';
+import 'package:app_piscina_v3/screens/course_details_admin.dart';
+import 'package:app_piscina_v3/services/course_service.dart';
+import 'package:app_piscina_v3/services/user_service.dart';
+import 'package:app_piscina_v3/theme.dart';
+import 'package:app_piscina_v3/utils/dialogs.dart';
+import 'package:app_piscina_v3/utils/enums.dart';
+import 'package:app_piscina_v3/utils/general_utils.dart';
+import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
 class AdminHome extends StatefulWidget {
@@ -8,8 +18,305 @@ class AdminHome extends StatefulWidget {
 }
 
 class _AdminHomeState extends State<AdminHome> {
+  final _userService = UserService();
+  final _courseService = CourseService();
+  UserModel? _user;
+  bool _isLoading = true;
+  List<UserModel> _admins = [];
+  List<Course> _dailyCourses = [];
+
+  @override
+  void initState() {
+    _loadData();
+    super.initState();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final user = await _userService.getUserData();
+      List<UserModel> admins = [];
+      List<Course> dailyCourses = [];
+
+      if (user != null) {
+        admins = await _userService.getAdmins(user.id);
+        dailyCourses = await _courseService.getDailyCourses();
+      }
+
+      setState(() {
+        _user = user;
+        _admins = admins;
+        _dailyCourses = dailyCourses;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _makeUser(String userId, String userName) async {
+    try {
+      final confirm = await showConfirmDialog(
+        context,
+        'Sei sicuro di voler rendere l\'utente $userName un utente base?',
+      );
+
+      if (!confirm) return;
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final outcome = await _userService.makeUser(userId);
+
+      if (outcome && mounted) {
+        Navigator.pop(context);
+        showSuccessDialog(
+          context,
+          'Operazione eseguita correttamente',
+          onContinue: () {
+            setState(() {
+              _isLoading = true;
+            });
+            _loadData();
+          },
+        );
+      }
+
+      if (!outcome && mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante l\'esecuzione dell\'operazione',
+          'Continua',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante l\'esecuzione dell\'operazione',
+          'Continua',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('AdminHome'));
+    if (_isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (_user == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text("Errore durante il caricamento dei dati."),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: _loadData, child: const Text("Riprova")),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundImage: AssetImage(_user!.photoUrl),
+                ),
+                const SizedBox(width: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Bentornato,',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      _user!.firstName,
+                      style: TextStyle(
+                        fontSize: 28,
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+            _admins.isEmpty
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Lista degli amministratori',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Non sono ancora presenti altri amministratori',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Lista degli amministratori',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      ..._admins.map((child) => _buildAdminHeader(child)),
+                    ],
+                  ),
+            const SizedBox(height: 20),
+            const Text(
+              'Lista dei corsi di oggi',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            if (_dailyCourses.isEmpty)
+              Text(
+                'Non sono previsti corsi per oggi',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            if (_dailyCourses.isNotEmpty)
+              ..._dailyCourses.map((course) {
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppTheme.lightSecondaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: course.type == CourseType.idrobike
+                                  ? Icon(Icons.pedal_bike_outlined)
+                                  : Icon(Icons.pool),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    course.type.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dateAndTimeToString(course.date),
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Nav.to(
+                                context,
+                                CourseDetailsAdmin(courseId: course.id),
+                              ),
+                              child: Text('Visualizza'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdminHeader(UserModel user) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: AssetImage(user.photoUrl),
+              backgroundColor: Colors.grey[200],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "${user.firstName} ${user.lastName}",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+            TextButton(
+              onPressed: () => _makeUser(user.id, user.fullName),
+              child: Text('Rimuovi'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
