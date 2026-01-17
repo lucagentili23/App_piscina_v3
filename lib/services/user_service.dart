@@ -20,8 +20,24 @@ class UserService {
     required String lastName,
     required Gender gender,
     required UserRole role,
+    required String accessCode,
   }) async {
     try {
+      String? code;
+
+      final accessCodeDocRef = await _db
+          .collection('settings')
+          .doc('registration')
+          .get();
+
+      if (accessCodeDocRef.exists) {
+        code = accessCodeDocRef.get('accessCode');
+      }
+
+      if (accessCode != code) {
+        throw 'invalid-access-code';
+      }
+
       final UserCredential userCredential = await _firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password);
 
@@ -43,6 +59,8 @@ class UserService {
         throw 'email-already-in-use';
       }
       throw e.code;
+    } catch (e) {
+      rethrow;
     }
   }
 

@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class CourseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<bool> createEvent({
+  Future<bool> createCourse({
     required CourseType courseType,
     required DateTime date,
   }) async {
@@ -31,16 +31,37 @@ class CourseService {
     }
   }
 
+  Future<bool> editCourse(String courseId, DateTime date) async {
+    try {
+      final bookingOpenDate = date.subtract(Duration(days: 14));
+
+      await _db.collection('courses').doc(courseId).update({
+        'date': Timestamp.fromDate(date),
+        'bookingOpenDate': bookingOpenDate,
+      });
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteCourse(String courseId) async {
+    try {
+      await _db.collection('courses').doc(courseId).delete();
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Crea casini? se usassi un metodo non straem e facessi aggiornare la pagina?
   // Es. su youtube se caricano un video nuovo non c'è lo stream
   Stream<List<Course>> getCoursesStream() {
-    DateTime now = DateTime.now();
-    DateTime todayStart = DateTime(now.year, now.month, now.day);
-    Timestamp startTimestamp = Timestamp.fromDate(todayStart);
-
     return _db
         .collection('courses')
-        .where('date', isGreaterThanOrEqualTo: startTimestamp)
+        .where('date', isGreaterThanOrEqualTo: DateTime.now())
         .orderBy('date')
         .snapshots()
         .map((snapshot) {
@@ -94,42 +115,6 @@ class CourseService {
       return null;
     } catch (e) {
       return null;
-    }
-  }
-
-  Future<String?> unbookFromCourse(
-    String courseId,
-    String id,
-    bool? isUser,
-  ) async {
-    try {
-      final courseRef = _db.collection('courses').doc(courseId);
-
-      Query query = courseRef.collection('attendees');
-
-      if (isUser == true) {
-        query = query
-            .where('userId', isEqualTo: id)
-            .where('childId', isEqualTo: null);
-      } else {
-        query = query.where('childId', isEqualTo: id);
-      }
-
-      final querySnapshot = await query.get();
-
-      if (querySnapshot.docs.isEmpty) {
-        return "Nessuna prenotazione trovata.";
-      }
-
-      for (var doc in querySnapshot.docs) {
-        await doc.reference.delete();
-      }
-
-      courseRef.update({'bookedSpots': FieldValue.increment(-1)});
-
-      return null;
-    } catch (e) {
-      return e.toString();
     }
   }
 

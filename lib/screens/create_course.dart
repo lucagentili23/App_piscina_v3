@@ -84,7 +84,7 @@ class _CreateCourseState extends State<CreateCourse> {
         _selectedTime!.minute,
       );
 
-      final outcome = await _courseService.createEvent(
+      final outcome = await _courseService.createCourse(
         courseType: _selectedValue,
         date: finalDatetime,
       );
@@ -97,6 +97,13 @@ class _CreateCourseState extends State<CreateCourse> {
         );
       }
     } catch (e) {
+      if (mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante la creazione del corso',
+          'Indietro',
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;

@@ -26,40 +26,40 @@ class _SplashState extends State<Splash> {
   void _splash() async {
     //await Future.delayed(const Duration(seconds: 1));
 
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      final authService = UserService();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        final authService = UserService();
 
-      if (user != null) {
-        try {
-          await user.reload();
+        if (user != null) {
+          try {
+            await user.reload();
+            final userRole = await authService.getUserRole();
 
-          final userRole = await authService.getUserRole();
+            if (!mounted) return;
 
-          if (!mounted) return;
-
-          if (userRole == UserRole.admin) {
-            Nav.replace(context, AdminLayout());
-          } else {
-            Nav.replace(context, UserLayout());
+            if (userRole == UserRole.admin) {
+              Nav.replace(context, const AdminLayout());
+            } else {
+              Nav.replace(context, const UserLayout());
+            }
+          } catch (e) {
+            await _authService.signOut();
+            if (!mounted) return;
+            Nav.replace(context, const SignIn());
           }
-        } catch (e) {
-          await _authService.signOut();
-
-          if (!mounted) return;
-
-          Nav.replace(context, SignIn());
+        } else {
+          if (mounted) {
+            Nav.replace(context, const SignIn());
+          }
         }
-      } else {
+      } catch (e) {
+        debugPrint(e.toString());
         if (mounted) {
-          Nav.replace(context, SignIn());
+          Nav.replace(context, const SignIn());
         }
       }
-    } catch (e) {
-      if (mounted) {
-        Nav.replace(context, SignIn());
-      }
-    }
+    });
   }
 
   @override

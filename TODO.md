@@ -17,3 +17,6 @@
 - [ ] Controlla che si smetta di ascoltare dove ci sono stream di dati
 - [ ] controlla se vale la pena mantenere gli stream dove creati
 - [ ] Cerca di otimizzare le chiamate al db (usa batch dove necessario)
+- [ ] Le operazioni devono essere eseguite in parallelo (se la connessione cade tra due operazioni sul db è un problema)
+- [ ] Controlla i try e catch e che gestiscano correttamente gli errori
+- [ ] Controlla se nelle schermate ci sono operazioni che potrebbero essere eseguite in parallelo (ad esempio quando carica i dati)

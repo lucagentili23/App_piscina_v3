@@ -21,6 +21,8 @@ class AppTheme {
         surface: Colors.white,
       ),
 
+      scaffoldBackgroundColor: const Color.fromARGB(255, 255, 239, 226),
+
       textTheme: GoogleFonts.montserratTextTheme(),
 
       appBarTheme: AppBarTheme(
@@ -32,7 +34,7 @@ class AppTheme {
 
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: primaryColor,
-        selectedItemColor: Colors.white,
+        selectedItemColor: lightSecondaryColor,
         unselectedItemColor: Colors.grey[300],
         selectedLabelStyle: const TextStyle(
           fontSize: 14,

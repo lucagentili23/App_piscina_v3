@@ -77,19 +77,29 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
 
   Future<void> _unbook(String attendeeDocId) async {
     try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
+      final confirm = await showConfirmDialog(
+        context,
+        'Sei sicuro di voler cancellare la prenotazione?',
       );
+
+      if (!confirm) return;
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+
       final outcome = await _courseService.removeAttendee(
         widget.courseId,
         attendeeDocId,
       );
 
       if (outcome && mounted) {
-        Navigator.pop(context);
-        _loadData();
+        Nav.replace(context, const UserLayout());
       }
     } catch (e) {
       if (mounted) {
@@ -195,7 +205,18 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                               children: [
                                 Text(attendee.displayedName),
                                 IconButton(
-                                  onPressed: () => _unbook(attendee.id),
+                                  onPressed:
+                                      DateTime.now().isBefore(
+                                        _course!.date.subtract(
+                                          Duration(hours: 6),
+                                        ),
+                                      )
+                                      ? () => _unbook(attendee.id)
+                                      : () => showAlertDialog(
+                                          context,
+                                          'Non è possibile cancellare la prenotazione nelle 8 ore precedenti il corso',
+                                          'Indietro',
+                                        ),
                                   icon: Icon(Icons.delete),
                                 ),
                               ],
@@ -256,7 +277,16 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
               child: _isBooking
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
-                      onPressed: () => _unbook(_attendees[0].id),
+                      onPressed:
+                          DateTime.now().isBefore(
+                            _course!.date.subtract(Duration(hours: 6)),
+                          )
+                          ? () => _unbook(_attendees[0].id)
+                          : () => showAlertDialog(
+                              context,
+                              'Non è possibile cancellare la prenotazione nelle 8 ore precedenti il corso',
+                              'Indietro',
+                            ),
                       child: Text(
                         _isBooked ? 'CANCELLA PRENOTAZIONE' : 'PRENOTA POSTO',
                         style: TextStyle(

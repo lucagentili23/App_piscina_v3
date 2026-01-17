@@ -24,6 +24,7 @@ class _SigupState extends State<SignUp> {
   final _emailConfirmationController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmationController = TextEditingController();
+  final _accessCodeController = TextEditingController();
 
   bool _isLoading = false;
   Gender _selectedValue = Gender.m;
@@ -70,6 +71,7 @@ class _SigupState extends State<SignUp> {
         lastName: lastName,
         gender: _selectedValue,
         role: UserRole.user,
+        accessCode: _accessCodeController.text,
       );
 
       if (!mounted) return;
@@ -86,14 +88,20 @@ class _SigupState extends State<SignUp> {
     } catch (e) {
       if (!mounted) return;
 
-      if (e == 'email-already-in-use') {
-        showErrorDialog(
-          context,
-          'Questa email è già associata ad un altro account',
-          'Continua',
-        );
-      } else {
-        showErrorDialog(context, 'Qualcosa è andato storto', 'Continua');
+      switch (e) {
+        case 'invalid-access-code':
+          showErrorDialog(context, 'Codice d\'accesso non valido', 'Indietro');
+          break;
+        case 'email-already-in-use':
+          showErrorDialog(
+            context,
+            'Questa email è già associata ad un altro account',
+            'Continua',
+          );
+          break;
+        default:
+          showErrorDialog(context, 'Qualcosa è andato storto', 'Indietro');
+          break;
       }
     } finally {
       if (mounted) {
@@ -240,6 +248,21 @@ class _SigupState extends State<SignUp> {
                                         ? Icon(Icons.visibility)
                                         : Icon(Icons.visibility_off),
                                   ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              TextFormField(
+                                controller: _accessCodeController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Inserire il codice d\'accesso';
+                                  }
+
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  label: const Text('Codice d\'accesso'),
+                                  prefixIcon: Icon(Icons.lock),
                                 ),
                               ),
                               const SizedBox(height: 20),

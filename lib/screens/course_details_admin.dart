@@ -1,7 +1,10 @@
+import 'package:app_piscina_v3/layouts/admin_layout.dart';
 import 'package:app_piscina_v3/models/attendee.dart';
 import 'package:app_piscina_v3/models/course.dart';
+import 'package:app_piscina_v3/screens/edit_course.dart';
 import 'package:app_piscina_v3/screens/view_attendees.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
+import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:app_piscina_v3/widgets/course_details/course_info_card.dart';
 import 'package:app_piscina_v3/widgets/course_details/course_type_bedge.dart';
@@ -47,6 +50,46 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
     }
   }
 
+  void _deleteCourse() async {
+    try {
+      final confirm = await showConfirmDialog(
+        context,
+        'Sei sicuro di voler eliminare definitivamente il corso?',
+      );
+
+      if (!confirm) return;
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final outcome = await _courseService.deleteCourse(widget.courseId);
+
+      if (outcome && mounted) {
+        Navigator.pop(context);
+        showSuccessDialog(
+          context,
+          'Corso eliminato con successo',
+          onContinue: () => Nav.replace(context, const AdminLayout()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        showErrorDialog(
+          context,
+          'Errore durante l\'eliminazione del corso',
+          'Indietro',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,8 +128,10 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
           CourseInfoCard(course: _course!),
           Center(
             child: TextButton(
-              onPressed: () =>
-                  Nav.to(context, ViewAttendees(attendees: _attendees)),
+              onPressed: () => Nav.to(
+                context,
+                ViewAttendees(attendees: _attendees, courseId: widget.courseId),
+              ),
               child: Text(
                 'Visualizza partecipanti',
                 style: TextStyle(fontSize: 16),
@@ -97,7 +142,8 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () =>
+                    Nav.to(context, EditCourse(courseId: widget.courseId)),
                 child: const Text(
                   'MODIFICA',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -105,7 +151,7 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
               ),
               const SizedBox(width: 10),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: _deleteCourse,
                 child: const Text(
                   'CANCELLA',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

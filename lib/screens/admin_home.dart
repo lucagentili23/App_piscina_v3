@@ -31,15 +31,26 @@ class _AdminHomeState extends State<AdminHome> {
     super.initState();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData({bool isRefresh = false}) async {
     try {
+      if (!isRefresh) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
+
       final user = await _userService.getUserData();
       List<UserModel> admins = [];
       List<Course> dailyCourses = [];
 
       if (user != null) {
-        admins = await _userService.getAdmins(user.id);
-        dailyCourses = await _courseService.getDailyCourses();
+        final results = await Future.wait([
+          _userService.getAdmins(user.id),
+          _courseService.getDailyCourses(),
+        ]);
+
+        admins = results[0] as List<UserModel>;
+        dailyCourses = results[1] as List<Course>;
       }
 
       setState(() {
@@ -110,7 +121,7 @@ class _AdminHomeState extends State<AdminHome> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_user == null) {
@@ -128,159 +139,187 @@ class _AdminHomeState extends State<AdminHome> {
       );
     }
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: AssetImage(_user!.photoUrl),
-                ),
-                const SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Bentornato,',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      _user!.firstName,
-                      style: TextStyle(
-                        fontSize: 28,
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            _admins.isEmpty
-                ? Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return RefreshIndicator(
+          onRefresh: () => _loadData(isRefresh: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Lista degli amministratori',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Non sono ancora presenti altri amministratori',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Lista degli amministratori',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      ..._admins.map((child) => _buildAdminHeader(child)),
-                    ],
-                  ),
-            const SizedBox(height: 20),
-            const Text(
-              'Lista dei corsi di oggi',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            if (_dailyCourses.isEmpty)
-              Text(
-                'Non sono previsti corsi per oggi',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            if (_dailyCourses.isNotEmpty)
-              ..._dailyCourses.map((course) {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  elevation: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppTheme.lightSecondaryColor,
-                                borderRadius: BorderRadius.circular(8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundImage: AssetImage(_user!.photoUrl),
+                          ),
+                          const SizedBox(width: 20),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Bentornato,',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              child: course.type == CourseType.idrobike
-                                  ? Icon(Icons.pedal_bike_outlined)
-                                  : Icon(Icons.pool),
+                              Text(
+                                _user!.firstName,
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  color: AppTheme.primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      _admins.isEmpty
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Lista degli amministratori',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  'Non sono ancora presenti altri amministratori',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade600,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Lista degli amministratori',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                ..._admins.map(
+                                  (child) => _buildAdminHeader(child),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Lista dei corsi di oggi',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (_dailyCourses.isEmpty)
+                        Expanded(
+                          // Spinge il messaggio vuoto un po' più giù se serve, o semplicemente lo mostra
+                          child: Text(
+                            'Non sono previsti corsi per oggi',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      if (_dailyCourses.isNotEmpty)
+                        ..._dailyCourses.map((course) {
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            elevation: 3,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    course.type.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    dateAndTimeToString(course.date),
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.lightSecondaryColor,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child:
+                                            course.type == CourseType.idrobike
+                                            ? const Icon(
+                                                Icons.pedal_bike_outlined,
+                                              )
+                                            : const Icon(Icons.pool),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              course.type.name,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              dateAndTimeToString(course.date),
+                                              style: TextStyle(
+                                                color: Colors.grey[700],
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Nav.to(
+                                          context,
+                                          CourseDetailsAdmin(
+                                            courseId: course.id,
+                                          ),
+                                        ),
+                                        child: const Text('Visualizza'),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
-                            TextButton(
-                              onPressed: () => Nav.to(
-                                context,
-                                CourseDetailsAdmin(courseId: course.id),
-                              ),
-                              child: Text('Visualizza'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          );
+                        }),
+                    ],
                   ),
-                );
-              }),
-          ],
-        ),
-      ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
