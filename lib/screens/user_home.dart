@@ -35,6 +35,7 @@ class _UserHomeState extends State<UserHome> {
   @override
   void initState() {
     _loadData();
+    _authService.saveDeviceToken();
     super.initState();
   }
 

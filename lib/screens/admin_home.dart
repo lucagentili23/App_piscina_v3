@@ -28,6 +28,7 @@ class _AdminHomeState extends State<AdminHome> {
   @override
   void initState() {
     _loadData();
+    _userService.saveDeviceToken();
     super.initState();
   }
 

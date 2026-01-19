@@ -20,3 +20,7 @@
 - [ ] Le operazioni devono essere eseguite in parallelo (se la connessione cade tra due operazioni sul db è un problema)
 - [ ] Controlla i try e catch e che gestiscano correttamente gli errori
 - [ ] Controlla se nelle schermate ci sono operazioni che potrebbero essere eseguite in parallelo (ad esempio quando carica i dati)
+- [ ] Centra tutti i titoli nelle appbar (su andorid non sono centrati)
+- [ ] Aggiungi scorrimento con caricamento per liste troppo lunghe come ad esempio notifiche (meglio se metti tutto max 10 elementi poi si aggiungono altri)
+
+- [ ] ELIMINA SOTTOCOLLEZIONI SE ELIMINI CORSO
