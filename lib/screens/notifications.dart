@@ -1,4 +1,4 @@
-import 'package:app_piscina_v3/services/user_service.dart'; // Assicurati che il percorso sia corretto
+import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +7,8 @@ class Notifications extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = UserService().currentUser;
+    final _userService = UserService();
+    final user = _userService.currentUser;
 
     if (user == null) {
       return const Scaffold(body: Center(child: Text("Effettua il login")));
@@ -39,8 +40,7 @@ class Notifications extends StatelessWidget {
             itemBuilder: (context, index) {
               final doc = docs[index];
               final data = doc.data() as Map<String, dynamic>;
-              final bool isRead =
-                  data['read'] ?? false; // Leggi lo stato attuale
+              final bool isRead = data['read'] ?? false;
 
               return ListTile(
                 leading: Icon(
@@ -58,8 +58,7 @@ class Notifications extends StatelessWidget {
                 subtitle: Text(data['body'] ?? ''),
                 onTap: () {
                   if (!isRead) {
-                    // Se non è letta, aggiornala sul database
-                    UserService().markNotificationAsRead(doc.id);
+                    _userService.markNotificationAsRead(doc.id);
                   }
                 },
               );

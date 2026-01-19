@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 
 class UserService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -126,7 +127,6 @@ class UserService {
 
       final messaging = FirebaseMessaging.instance;
 
-      // 1. Richiedi i permessi (Obbligatorio su iOS)
       final settings = await messaging.requestPermission(
         alert: true,
         badge: true,
@@ -134,11 +134,10 @@ class UserService {
       );
 
       if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-        print('Permesso notifiche negato dall\'utente');
         return;
       }
 
-      // 2. FIX PER IOS: Attendi il token APNS prima di chiedere quello FCM
+      // PER IOS: Attendi il token APNS prima di chiedere quello FCM
       if (Platform.isIOS) {
         String? apnsToken = await messaging.getAPNSToken();
 
@@ -149,23 +148,19 @@ class UserService {
         }
 
         if (apnsToken == null) {
-          print(
-            'ERRORE: Impossibile ottenere il token APNS su iOS. Verifica le Capabilities in Xcode.',
-          );
-          return; // Interrompiamo per evitare il crash di getToken()
+          return;
         }
       }
 
-      // 3. Ora è sicuro chiedere il token FCM
+      // Ora è sicuro chiedere il token FCM
       final token = await messaging.getToken();
 
       if (token != null) {
         await _db.collection('users').doc(currentUser.uid).set({
           'fcmToken': token,
-          'platform': Platform.operatingSystem, // Utile per debug
+          'platform': Platform.operatingSystem,
           'lastTokenUpdate': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
-        print('Token salvato correttamente: $token');
       }
 
       // Ascolta cambiamenti del token nel tempo
@@ -173,14 +168,12 @@ class UserService {
         _db.collection('users').doc(currentUser.uid).set({
           'fcmToken': newToken,
         }, SetOptions(merge: true));
-        print('NewToken: $newToken');
       });
     } catch (e) {
-      print('Errore salvataggio token: $e');
+      debugPrint('Errore salvataggio token: $e');
     }
   }
 
-  // Aggiungi questo metodo alla classe UserService
   Future<void> markNotificationAsRead(String notificationId) async {
     try {
       final currentUser = _firebaseAuth.currentUser;
@@ -193,8 +186,23 @@ class UserService {
           .doc(notificationId)
           .update({'read': true});
     } catch (e) {
-      print('Errore durante l\'aggiornamento della notifica: $e');
+      debugPrint('Errore durante la lettura della notifica: $e');
     }
+  }
+
+  Stream<bool> get unreadNotificationsStream {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      return Stream.value(false);
+    }
+
+    return _db
+        .collection('users')
+        .doc(user.uid)
+        .collection('notifications')
+        .where('read', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.isNotEmpty);
   }
 
   Future<UserRole?> getUserRole() async {

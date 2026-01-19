@@ -1,6 +1,5 @@
 import 'package:app_piscina_v3/models/attendee.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
-import 'package:app_piscina_v3/theme.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:flutter/material.dart';
 
@@ -91,32 +90,29 @@ class _ViewAttendeesState extends State<ViewAttendees> {
                 itemBuilder: (context, index) {
                   return Card(
                     child: Padding(
-                      padding: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
                               CircleAvatar(
-                                radius: 15,
+                                radius: 20,
                                 backgroundImage: AssetImage(
                                   widget.attendees[index].displayedPhotoUrl,
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 15),
                               Text(
                                 widget.attendees[index].displayedName,
                                 style: TextStyle(fontSize: 16),
                               ),
                             ],
                           ),
-                          IconButton(
+                          TextButton(
                             onPressed: () =>
                                 _unbookAttendee(widget.attendees[index].id),
-                            icon: Icon(
-                              Icons.delete,
-                              color: AppTheme.secondaryColor,
-                            ),
+                            child: Text('Rimuovi'),
                           ),
                         ],
                       ),

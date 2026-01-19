@@ -16,7 +16,7 @@ class AdminLayout extends StatefulWidget {
 }
 
 class _AdminLayoutState extends State<AdminLayout> {
-  final _authService = UserService();
+  final _userService = UserService();
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
@@ -28,7 +28,7 @@ class _AdminLayoutState extends State<AdminLayout> {
   final List<String> _titles = ['Home', 'Corsi', 'Clienti'];
 
   void _signOut() async {
-    await _authService.signOut();
+    await _userService.signOut();
 
     if (!mounted) return;
 
@@ -37,10 +37,10 @@ class _AdminLayoutState extends State<AdminLayout> {
 
   @override
   void initState() {
-    super.initState();
     if (widget.index != null) {
       _selectedIndex = widget.index!;
     }
+    super.initState();
   }
 
   @override
@@ -51,18 +51,28 @@ class _AdminLayoutState extends State<AdminLayout> {
         centerTitle: true,
         actions: [
           if (_selectedIndex == 0) ...[
-            IconButton(
-              onPressed: () => Nav.to(context, const Notifications()),
-              icon: Badge(
-                smallSize: 10,
-                isLabelVisible: true,
-                backgroundColor: Colors.red,
-                child: Icon(Icons.notifications_outlined),
-              ),
+            StreamBuilder<bool>(
+              stream: _userService.unreadNotificationsStream,
+              initialData: false,
+              builder: (context, snapshot) {
+                final hasUnread = snapshot.data ?? false;
+
+                return IconButton(
+                  onPressed: () => Nav.to(context, const Notifications()),
+                  icon: hasUnread
+                      ? Badge(
+                          smallSize: 10,
+                          isLabelVisible: true,
+                          backgroundColor: Colors.red,
+                          child: const Icon(Icons.notifications_outlined),
+                        )
+                      : const Icon(Icons.notifications_outlined),
+                );
+              },
             ),
             IconButton(
               onPressed: () => _signOut(),
-              icon: Icon(Icons.exit_to_app),
+              icon: const Icon(Icons.exit_to_app),
             ),
           ],
         ],

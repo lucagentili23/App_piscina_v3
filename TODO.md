@@ -23,4 +23,4 @@
 - [ ] Centra tutti i titoli nelle appbar (su andorid non sono centrati)
 - [ ] Aggiungi scorrimento con caricamento per liste troppo lunghe come ad esempio notifiche (meglio se metti tutto max 10 elementi poi si aggiungono altri)
 
-- [ ] ELIMINA SOTTOCOLLEZIONI SE ELIMINI CORSO
+- [ ] ELIMINA SOTTOCOLLEZIONI SE ELIMINI CORSO (fatto?)

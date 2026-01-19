@@ -204,7 +204,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(attendee.displayedName),
-                                IconButton(
+                                TextButton(
                                   onPressed:
                                       DateTime.now().isBefore(
                                         _course!.date.subtract(
@@ -217,7 +217,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                                           'Non è possibile cancellare la prenotazione nelle 8 ore precedenti il corso',
                                           'Indietro',
                                         ),
-                                  icon: Icon(Icons.delete),
+                                  child: Text('Rimuovi'),
                                 ),
                               ],
                             ),

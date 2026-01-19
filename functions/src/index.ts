@@ -120,18 +120,32 @@ export const onCourseUpdated = onDocumentUpdated(
       .doc(event.params.courseId)
       .collection("attendees")
       .get();
-    const notifications = attendeesSnapshot.docs.map((doc) => {
+
+    const attendeeNotifications = attendeesSnapshot.docs.map((doc) => {
       const data = doc.data();
       return data.userId
         ? sendNotificationToUser(
             data.userId,
-            "Variazione dati corso",
+            "Variazione corso",
             `Il corso del ${formattedOldDate} è stato spostato al ${formattedNewDate}.`,
           )
         : null;
     });
 
-    await Promise.all(notifications);
+    const adminsSnapshot = await db
+      .collection("users")
+      .where("role", "==", "admin")
+      .get();
+
+    const adminNotifications = adminsSnapshot.docs.map((doc) => {
+      return sendNotificationToUser(
+        doc.id,
+        "Variazione corso",
+        `Il corso del ${formattedOldDate} è stato spostato al ${formattedNewDate}.`,
+      );
+    });
+
+    await Promise.all([...attendeeNotifications, ...adminNotifications]);
   },
 );
 
@@ -155,7 +169,7 @@ export const onCourseDeleted = onDocumentDeleted(
       .get();
     const batchDelete = db.batch();
 
-    const notifications = attendeesSnapshot.docs.map((doc) => {
+    const attendeeNotifications = attendeesSnapshot.docs.map((doc) => {
       const data = doc.data();
       batchDelete.delete(doc.ref);
       return data.userId
@@ -167,7 +181,20 @@ export const onCourseDeleted = onDocumentDeleted(
         : null;
     });
 
-    await Promise.all(notifications);
+    const adminsSnapshot = await db
+      .collection("users")
+      .where("role", "==", "admin")
+      .get();
+
+    const adminNotifications = adminsSnapshot.docs.map((doc) => {
+      return sendNotificationToUser(
+        doc.id,
+        "Corso Cancellato",
+        `Il corso del ${formattedDate} è stato cancellato.`,
+      );
+    });
+
+    await Promise.all([...attendeeNotifications, ...adminNotifications]);
     await batchDelete.commit();
   },
 );
