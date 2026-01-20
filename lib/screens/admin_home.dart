@@ -27,9 +27,9 @@ class _AdminHomeState extends State<AdminHome> {
 
   @override
   void initState() {
+    super.initState();
     _loadData();
     _userService.saveDeviceToken();
-    super.initState();
   }
 
   Future<void> _loadData({bool isRefresh = false}) async {
@@ -133,7 +133,10 @@ class _AdminHomeState extends State<AdminHome> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            const Text("Errore durante il caricamento dei dati."),
+            const Text(
+              "Errore durante il caricamento dei dati",
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: const Text("Riprova")),
           ],
@@ -186,52 +189,22 @@ class _AdminHomeState extends State<AdminHome> {
                         ],
                       ),
                       const SizedBox(height: 30),
-                      _admins.isEmpty
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Lista degli amministratori',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  'Non sono ancora presenti altri amministratori',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey.shade600,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Lista degli amministratori',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                ..._admins.map(
-                                  (child) => _buildAdminHeader(child),
-                                ),
-                              ],
+
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.assignment_turned_in,
+                            color: AppTheme.primaryColor,
+                          ),
+                          const SizedBox(width: 5),
+                          const Text(
+                            'Lista dei corsi di oggi',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Lista dei corsi di oggi',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 20),
                       if (_dailyCourses.isEmpty)
@@ -262,17 +235,17 @@ class _AdminHomeState extends State<AdminHome> {
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.lightSecondaryColor,
+                                          color: AppTheme.lightPrimaryColor,
                                           borderRadius: BorderRadius.circular(
                                             8,
                                           ),
                                         ),
-                                        child:
-                                            course.type == CourseType.idrobike
-                                            ? const Icon(
-                                                Icons.pedal_bike_outlined,
-                                              )
-                                            : const Icon(Icons.pool),
+                                        child: Icon(
+                                          course.type == CourseType.idrobike
+                                              ? Icons.pedal_bike_outlined
+                                              : Icons.pool,
+                                          color: AppTheme.primaryColor,
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -281,7 +254,7 @@ class _AdminHomeState extends State<AdminHome> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              course.type.name,
+                                              course.type.name.toUpperCase(),
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 16,
@@ -314,6 +287,65 @@ class _AdminHomeState extends State<AdminHome> {
                             ),
                           );
                         }),
+                      Divider(),
+                      const SizedBox(height: 10),
+                      _admins.isEmpty
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.people,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    const Text(
+                                      'Lista degli amministratori',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  'Non sono ancora presenti altri amministratori',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade600,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.people,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    const Text(
+                                      'Lista degli amministratori',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                ..._admins.map(
+                                  (child) => _buildAdminHeader(child),
+                                ),
+                              ],
+                            ),
                     ],
                   ),
                 ),

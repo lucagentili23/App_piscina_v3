@@ -27,8 +27,8 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
 
   @override
   void initState() {
-    _loadData();
     super.initState();
+    _loadData();
   }
 
   Future<void> _loadData() async {
@@ -119,7 +119,10 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            const Text("Impossibile caricare i dati del corso."),
+            const Text(
+              "Impossibile caricare i dati del corso.",
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: const Text("Riprova")),
           ],

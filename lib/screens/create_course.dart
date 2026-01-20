@@ -32,6 +32,13 @@ class _CreateCourseState extends State<CreateCourse> {
 
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _timeController.dispose();
+    super.dispose();
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,

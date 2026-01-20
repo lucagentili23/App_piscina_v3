@@ -29,6 +29,13 @@ class _AdminLayoutState extends State<AdminLayout> {
   final List<String> _titles = ['Home', 'Corsi', 'Clienti'];
 
   void _signOut() async {
+    final confirm = await showConfirmDialog(
+      context,
+      'Vuoi davvero effettuare il logout?\nDovrai accedere nuovamente con email e password',
+    );
+
+    if (!confirm) return;
+
     final success = await _userService.signOut();
 
     if (!mounted) return;
@@ -42,10 +49,10 @@ class _AdminLayoutState extends State<AdminLayout> {
 
   @override
   void initState() {
+    super.initState();
     if (widget.index != null) {
       _selectedIndex = widget.index!;
     }
-    super.initState();
   }
 
   @override

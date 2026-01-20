@@ -181,17 +181,33 @@ class UserService {
 
   Future<void> markNotificationAsRead(String notificationId) async {
     try {
-      final currentUser = _firebaseAuth.currentUser;
       if (currentUser == null) return;
 
       await _db
           .collection('users')
-          .doc(currentUser.uid)
+          .doc(currentUser!.uid)
           .collection('notifications')
           .doc(notificationId)
           .update({'read': true});
     } catch (e) {
       debugPrint('Errore durante la lettura della notifica: $e');
+    }
+  }
+
+  Future<bool> deleteNotification(String id) async {
+    try {
+      if (currentUser == null) return false;
+
+      await _db
+          .collection('users')
+          .doc(currentUser!.uid)
+          .collection('notifications')
+          .doc(id)
+          .delete();
+
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 

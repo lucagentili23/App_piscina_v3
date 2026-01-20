@@ -25,8 +25,8 @@ class _CoursesState extends State<Courses> {
 
   @override
   void initState() {
-    _loadRole();
     super.initState();
+    _loadRole();
   }
 
   Future<void> _loadRole() async {
@@ -54,7 +54,10 @@ class _CoursesState extends State<Courses> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            const Text("Errore durante il caricamento dei dati."),
+            const Text(
+              "Errore durante il caricamento dei dati.",
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadRole, child: const Text("Riprova")),
           ],
@@ -74,6 +77,7 @@ class _CoursesState extends State<Courses> {
               return Center(
                 child: Text(
                   'Errore durante il caricamento dei corsi',
+                  textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
               );
@@ -85,6 +89,7 @@ class _CoursesState extends State<Courses> {
               return Center(
                 child: Text(
                   'Nessun corso ancora disponibile',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
                     fontStyle: FontStyle.italic,
@@ -140,14 +145,17 @@ class _CoursesState extends State<Courses> {
         child: ListTile(
           leading: Container(
             decoration: BoxDecoration(
-              color: AppTheme.lightSecondaryColor,
+              color: AppTheme.lightPrimaryColor,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
-              child: course.type == CourseType.idrobike
-                  ? Icon(Icons.pedal_bike_outlined)
-                  : Icon(Icons.pool),
+              child: Icon(
+                course.type == CourseType.idrobike
+                    ? Icons.pedal_bike_outlined
+                    : Icons.pool,
+                color: AppTheme.primaryColor,
+              ),
             ),
           ),
           title: Text(
@@ -155,14 +163,17 @@ class _CoursesState extends State<Courses> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.secondary,
+              color: AppTheme.primaryColor,
             ),
           ),
           subtitle: Text(
             dateAndTimeToString(course.date),
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(
+            Icons.chevron_right,
+            color: AppTheme.primaryColor,
+          ),
         ),
       ),
     );

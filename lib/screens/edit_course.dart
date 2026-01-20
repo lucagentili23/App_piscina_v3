@@ -31,8 +31,15 @@ class _EditCourseState extends State<EditCourse> {
 
   @override
   void initState() {
-    _getCourseData();
     super.initState();
+    _getCourseData();
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _timeController.dispose();
+    super.dispose();
   }
 
   void _getCourseData() async {
@@ -157,6 +164,22 @@ class _EditCourseState extends State<EditCourse> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Modifica corso'), centerTitle: true),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_course == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Modifica corso'), centerTitle: true),
+        body: Center(
+          child: Text('Corso non trovato', textAlign: TextAlign.center),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text('Modifica corso')),
       body: GestureDetector(
@@ -203,7 +226,10 @@ class _EditCourseState extends State<EditCourse> {
                             onPressed: _isLoading ? null : _editCourse,
                             child: _isLoading
                                 ? CircularProgressIndicator()
-                                : Text('Crea', style: TextStyle(fontSize: 20)),
+                                : Text(
+                                    'Modifica',
+                                    style: TextStyle(fontSize: 20),
+                                  ),
                           ),
                         ],
                       ),

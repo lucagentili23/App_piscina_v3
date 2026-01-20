@@ -21,8 +21,8 @@ class _ClientsState extends State<Clients> {
 
   @override
   void initState() {
-    _getUsers();
     super.initState();
+    _getUsers();
   }
 
   Future<void> _getUsers() async {
@@ -194,6 +194,7 @@ class _ClientsState extends State<Clients> {
       return Center(
         child: Text(
           'Nessun cliente ancora registrato',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16,
             fontStyle: FontStyle.italic,
@@ -205,11 +206,14 @@ class _ClientsState extends State<Clients> {
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: ListView.builder(
-        itemCount: _users.length,
-        itemBuilder: (context, index) {
-          return _buildUserCard(_users[index]);
-        },
+      child: RefreshIndicator(
+        onRefresh: _getUsers,
+        child: ListView.builder(
+          itemCount: _users.length,
+          itemBuilder: (context, index) {
+            return _buildUserCard(_users[index]);
+          },
+        ),
       ),
     );
   }
@@ -278,7 +282,10 @@ class _ClientsState extends State<Clients> {
               if (snapshot.hasError) {
                 return const Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Text("Errore nel caricamento dei figli"),
+                  child: Text(
+                    "Errore nel caricamento dei figli",
+                    textAlign: TextAlign.center,
+                  ),
                 );
               }
 
@@ -289,6 +296,7 @@ class _ClientsState extends State<Clients> {
                   padding: EdgeInsets.all(16.0),
                   child: Text(
                     "Nessun figlio registrato",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontStyle: FontStyle.italic,
                       color: Colors.grey,
@@ -312,33 +320,39 @@ class _ClientsState extends State<Clients> {
             },
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Wrap(
-              alignment: WrapAlignment.spaceEvenly,
-              spacing: 8.0,
-              runSpacing: 8.0,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Divider(),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
               children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: user.isDisabled
-                        ? Colors.green
-                        : Colors.orange,
+                TextButton(
+                  onPressed: () => _makeAdmin(user.id, user.fullName),
+                  child: const Text(
+                    'Rendi amministratore',
+                    style: TextStyle(fontSize: 16),
                   ),
+                ),
+                TextButton(
                   onPressed: () =>
                       _handleDisable(user.id, user.fullName, user.isDisabled),
                   child: user.isDisabled
-                      ? const Text('Abilita')
-                      : const Text('Disabilita'),
+                      ? const Text(
+                          'Abilita',
+                          style: TextStyle(color: Colors.green),
+                        )
+                      : const Text(
+                          'Disabilita',
+                          style: TextStyle(color: Colors.orange, fontSize: 16),
+                        ),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  onPressed: () => _makeAdmin(user.id, user.fullName),
-                  child: const Text('Rendi amministratore'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                TextButton(
                   onPressed: () => _handleDelete(user.id, user.fullName),
-                  child: const Text('Elimina'),
+                  child: const Text(
+                    'Elimina',
+                    style: TextStyle(color: Colors.red, fontSize: 16),
+                  ),
                 ),
               ],
             ),

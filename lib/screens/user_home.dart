@@ -34,9 +34,9 @@ class _UserHomeState extends State<UserHome> {
 
   @override
   void initState() {
+    super.initState();
     _loadData();
     _userService.saveDeviceToken();
-    super.initState();
   }
 
   Future<void> _loadData({bool isRefresh = false}) async {
@@ -193,12 +193,21 @@ class _UserHomeState extends State<UserHome> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        "Le tue prenotazioni",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.assignment_turned_in,
+                            color: AppTheme.primaryColor,
+                          ),
+                          const SizedBox(width: 5),
+                          const Text(
+                            "Le tue prenotazioni",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       if (_bookedData.isEmpty)
@@ -207,6 +216,7 @@ class _UserHomeState extends State<UserHome> {
                           child: Center(
                             child: Text(
                               "Nessuna prenotazione attiva",
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.grey,
                                 fontSize: 16,
@@ -232,15 +242,17 @@ class _UserHomeState extends State<UserHome> {
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.lightSecondaryColor,
+                                          color: AppTheme.lightPrimaryColor,
                                           borderRadius: BorderRadius.circular(
                                             8,
                                           ),
                                         ),
-                                        child:
-                                            course.type == CourseType.idrobike
-                                            ? Icon(Icons.pedal_bike_outlined)
-                                            : Icon(Icons.pool),
+                                        child: Icon(
+                                          course.type == CourseType.idrobike
+                                              ? Icons.pedal_bike_outlined
+                                              : Icons.pool,
+                                          color: AppTheme.primaryColor,
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -249,7 +261,7 @@ class _UserHomeState extends State<UserHome> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              course.type.name,
+                                              course.type.name.toUpperCase(),
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 16,
@@ -266,14 +278,19 @@ class _UserHomeState extends State<UserHome> {
                                           ],
                                         ),
                                       ),
-                                      TextButton(
+                                      ElevatedButton(
                                         onPressed: () => Nav.to(
                                           context,
                                           CourseDetailsUser(
                                             courseId: course.id,
                                           ),
                                         ),
-                                        child: Text('Visualizza'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              AppTheme.primaryColor,
+                                          elevation: 0,
+                                        ),
+                                        child: Text('Dettagli'),
                                       ),
                                     ],
                                   ),
@@ -282,12 +299,8 @@ class _UserHomeState extends State<UserHome> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        "Partecipanti: ",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                      const Icon(Icons.people_alt_outlined),
+                                      const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
                                           names.join(", "),
@@ -304,6 +317,7 @@ class _UserHomeState extends State<UserHome> {
                           );
                         }),
                       const Divider(),
+                      const SizedBox(height: 10),
                       _children.isEmpty
                           ? Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -319,12 +333,21 @@ class _UserHomeState extends State<UserHome> {
                           : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  "I tuoi figli registrati:",
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.family_restroom,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      "I tuoi figli registrati:",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 10),
                                 ..._children.map(
@@ -380,12 +403,12 @@ class _UserHomeState extends State<UserHome> {
             ),
             IconButton(
               onPressed: () => Nav.to(context, EditChild(childId: child.id)),
-              icon: Icon(Icons.edit),
+              icon: Icon(Icons.edit_outlined, color: AppTheme.primaryColor),
               color: Colors.grey[700],
             ),
             IconButton(
               onPressed: () => _deleteChild(child.id),
-              icon: Icon(Icons.delete),
+              icon: Icon(Icons.delete_outline, color: Colors.red),
               color: Colors.grey[700],
             ),
           ],

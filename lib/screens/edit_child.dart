@@ -44,8 +44,8 @@ class _EditChildState extends State<EditChild> {
 
   @override
   void initState() {
-    _getChildData();
     super.initState();
+    _getChildData();
   }
 
   Future<void> _getChildData() async {
@@ -59,13 +59,19 @@ class _EditChildState extends State<EditChild> {
         widget.childId,
       );
 
-      setState(() {
-        _child = child;
-        _nameController.text = child!.firstName;
-        _lastNameController.text = child.lastName;
-        _selectedValue = child.gender;
-        _isLoading = false;
-      });
+      if (child != null) {
+        setState(() {
+          _child = child;
+          _nameController.text = child.firstName;
+          _lastNameController.text = child.lastName;
+          _selectedValue = child.gender;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _child = null;
+        });
+      }
     } catch (e) {
       setState(() {
         _child = null;
@@ -139,69 +145,80 @@ class _EditChildState extends State<EditChild> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Modifica figlio'), centerTitle: true),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_child == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Modifica figlio'), centerTitle: true),
+        body: Center(
+          child: Text('Figlio non trovato', textAlign: TextAlign.center),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text('Modifica figlio')),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      validator: Validators.validateName,
-                      decoration: InputDecoration(
-                        label: const Text('Nome'),
-                        prefixIcon: Icon(Icons.account_circle),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _lastNameController,
-                      validator: Validators.validateName,
-                      decoration: InputDecoration(
-                        label: const Text('Cognome'),
-                        prefixIcon: Icon(Icons.account_circle),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    DropdownButtonFormField<Gender>(
-                      decoration: const InputDecoration(labelText: "Sesso"),
-                      initialValue: _child!.gender,
-                      items: sexEntries
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e.value,
-                              child: Text(e.label),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          if (value != null) {
-                            _selectedValue = value;
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      child: _isLoading
-                          ? CircularProgressIndicator()
-                          : ElevatedButton(
-                              onPressed: _isLoading ? null : _editChild,
-                              child: Text(
-                                'Modifica',
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            ),
-                    ),
-                  ],
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                validator: Validators.validateName,
+                decoration: InputDecoration(
+                  label: const Text('Nome'),
+                  prefixIcon: Icon(Icons.account_circle),
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _lastNameController,
+                validator: Validators.validateName,
+                decoration: InputDecoration(
+                  label: const Text('Cognome'),
+                  prefixIcon: Icon(Icons.account_circle),
+                ),
+              ),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<Gender>(
+                decoration: const InputDecoration(labelText: "Sesso"),
+                initialValue: _child!.gender,
+                items: sexEntries
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e.value,
+                        child: Text(e.label),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    if (value != null) {
+                      _selectedValue = value;
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                child: _isLoading
+                    ? CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: _isLoading ? null : _editChild,
+                        child: Text('Modifica', style: TextStyle(fontSize: 20)),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

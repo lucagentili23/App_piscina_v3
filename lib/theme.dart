@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const primaryColor = Color.fromARGB(255, 106, 173, 215);
-  static const secondaryColor = Color.fromARGB(255, 242, 151, 77);
-  static const lightPrimaryColor = Color.fromARGB(255, 168, 214, 243);
-  static const lightSecondaryColor = Color.fromARGB(255, 255, 212, 177);
+  static const primaryColor = Color(0xFF1E88E5);
+  static const lightPrimaryColor = Color(0xFFBBDEFB);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -13,58 +11,68 @@ class AppTheme {
       brightness: Brightness.light,
 
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
+        seedColor: primaryColor,
         primary: primaryColor,
         onPrimary: Colors.white,
-        secondary: secondaryColor,
-        onSecondary: Colors.white,
         surface: Colors.white,
       ),
 
-      scaffoldBackgroundColor: const Color.fromARGB(255, 255, 239, 226),
+      scaffoldBackgroundColor: const Color(0xFFEEEFF2),
 
-      textTheme: GoogleFonts.montserratTextTheme(),
+      textTheme: GoogleFonts.montserratTextTheme().apply(
+        bodyColor: const Color(0xFF2D3133),
+        displayColor: primaryColor,
+      ),
 
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        elevation: 2,
+        elevation: 0,
+        centerTitle: true,
         surfaceTintColor: Colors.transparent,
       ),
 
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: primaryColor,
-        selectedItemColor: lightSecondaryColor,
-        unselectedItemColor: Colors.grey[300],
-        selectedLabelStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 4,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.grey.withValues(alpha: 0.1), width: 1),
         ),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      ),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: Color(0xFF9E9E9E),
+        elevation: 15,
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: secondaryColor,
+          backgroundColor: primaryColor,
           foregroundColor: Colors.white,
+          elevation: 3,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
         ),
       ),
 
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: Colors.orange[800],
-      ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0)),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.blue[700]!, width: 2.0),
-          borderRadius: BorderRadius.circular(20.0),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16.0),
+          borderSide: const BorderSide(color: Color(0xFFD1D5DB), width: 1),
         ),
-        labelStyle: const TextStyle(color: Colors.black87),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: primaryColor, width: 2.0),
+          borderRadius: BorderRadius.circular(16.0),
+        ),
       ),
     );
   }

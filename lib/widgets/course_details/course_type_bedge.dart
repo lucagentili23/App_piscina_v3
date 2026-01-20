@@ -13,7 +13,7 @@ class CourseTypeBadge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: AppTheme.lightSecondaryColor,
+          color: AppTheme.lightPrimaryColor,
         ),
         child: Text(
           text.toUpperCase(),

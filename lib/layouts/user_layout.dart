@@ -23,6 +23,13 @@ class _UserLayoutState extends State<UserLayout> {
   final List<String> _titles = ['Home', 'Corsi'];
 
   void _signOut() async {
+    final confirm = await showConfirmDialog(
+      context,
+      'Vuoi davvero effettuare il logout?\nDovrai accedere nuovamente con email e password',
+    );
+
+    if (!confirm) return;
+
     final success = await _userService.signOut();
 
     if (!mounted) return;

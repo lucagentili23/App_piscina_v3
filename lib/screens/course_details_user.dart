@@ -39,8 +39,8 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
 
   @override
   void initState() {
-    _loadData();
     super.initState();
+    _loadData();
   }
 
   Future<void> _loadData() async {
@@ -173,7 +173,10 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            const Text("Impossibile caricare i dati del corso."),
+            const Text(
+              "Impossibile caricare i dati del corso.",
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: const Text("Riprova")),
           ],
@@ -187,21 +190,33 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CourseTypeBadge(text: _course!.type.name),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           CourseInfoCard(course: _course!),
           if (_attendees.isNotEmpty && _children.isNotEmpty) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Container(
               decoration: BoxDecoration(
-                color: AppTheme.lightSecondaryColor,
+                color: AppTheme.lightPrimaryColor,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.primaryColor),
               ),
-              child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Le tue iscrizioni:',
-                      style: TextStyle(fontSize: 18),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.assignment_turned_in,
+                          color: AppTheme.primaryColor,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'Le tue iscrizioni:',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
                     ListView.builder(
@@ -219,7 +234,20 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(attendee.displayedName),
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundImage: AssetImage(
+                                        attendee.displayedPhotoUrl,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      attendee.displayedName,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
                                 TextButton(
                                   onPressed:
                                       DateTime.now().isBefore(
@@ -241,13 +269,15 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                         );
                       },
                     ),
-                    ElevatedButton(
-                      onPressed: _handleBookingPress,
-                      child: Text(
-                        'AGGIUNGI PRENOTAZIONE',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _handleBookingPress,
+                        child: Text(
+                          'AGGIUNGI PRENOTAZIONE',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
