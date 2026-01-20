@@ -5,15 +5,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ChildService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<void> addChild(String parentId, Child child) async {
+  Future<bool> addChild(String parentId, Child child) async {
     try {
       await _db
           .collection('users')
           .doc(parentId)
           .collection('children')
           .add(child.toMap());
+
+      return true;
     } catch (e) {
-      rethrow;
+      return false;
     }
   }
 

@@ -38,9 +38,7 @@ class _ViewAttendeesState extends State<ViewAttendees> {
         );
       }
 
-      bool outcome = false;
-
-      outcome = await _courseService.removeAttendee(
+      final outcome = await _courseService.removeAttendee(
         widget.courseId,
         attendeeId,
       );
@@ -53,12 +51,20 @@ class _ViewAttendeesState extends State<ViewAttendees> {
           onContinue: () => Navigator.pop(context),
         );
       }
+
+      if (!outcome && mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante la rimozione del partecipante dal corso',
+          'Indietro',
+        );
+      }
     } catch (e) {
       if (mounted) {
         showErrorDialog(
           context,
           'Errore durante la rimozione del partecipante dal corso',
-          'Continua',
+          'Indietro',
         );
       }
     }

@@ -19,7 +19,7 @@ class Courses extends StatefulWidget {
 
 class _CoursesState extends State<Courses> {
   final _courseService = CourseService();
-  final _authService = UserService();
+  final _userService = UserService();
   UserRole? _role;
   bool _isLoading = true;
 
@@ -30,17 +30,38 @@ class _CoursesState extends State<Courses> {
   }
 
   Future<void> _loadRole() async {
-    final role = await _authService.getUserRole();
-    if (mounted) {
+    try {
+      final role = await _userService.getUserRole();
+      if (mounted) {
+        setState(() {
+          _role = role;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        _role = role;
-        _isLoading = false;
+        _role = null;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_role == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text("Errore durante il caricamento dei dati."),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: _loadRole, child: const Text("Riprova")),
+          ],
+        ),
+      );
+    }
+
     return Stack(
       children: [
         StreamBuilder<List<Course>>(

@@ -7,10 +7,9 @@ class Notifications extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _userService = UserService();
-    final user = _userService.currentUser;
+    final userService = UserService();
 
-    if (user == null) {
+    if (userService.currentUser == null) {
       return const Scaffold(body: Center(child: Text("Effettua il login")));
     }
 
@@ -19,11 +18,17 @@ class Notifications extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .doc(user.uid)
+            .doc(userService.currentUser!.uid)
             .collection('notifications')
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Errore durante il caricamento delle notifiche'),
+            );
+          }
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -58,7 +63,7 @@ class Notifications extends StatelessWidget {
                 subtitle: Text(data['body'] ?? ''),
                 onTap: () {
                   if (!isRead) {
-                    _userService.markNotificationAsRead(doc.id);
+                    userService.markNotificationAsRead(doc.id);
                   }
                 },
               );

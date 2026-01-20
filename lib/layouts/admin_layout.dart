@@ -4,6 +4,7 @@ import 'package:app_piscina_v3/screens/courses.dart';
 import 'package:app_piscina_v3/screens/notifications.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
+import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
@@ -28,11 +29,15 @@ class _AdminLayoutState extends State<AdminLayout> {
   final List<String> _titles = ['Home', 'Corsi', 'Clienti'];
 
   void _signOut() async {
-    await _userService.signOut();
+    final success = await _userService.signOut();
 
     if (!mounted) return;
 
-    Nav.replace(context, SignIn());
+    if (success) {
+      Nav.replace(context, const SignIn());
+    } else {
+      showErrorDialog(context, 'Errore durante il logout', 'Indietro');
+    }
   }
 
   @override

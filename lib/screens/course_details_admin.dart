@@ -78,6 +78,15 @@ class _CourseDetailsAdminState extends State<CourseDetailsAdmin> {
           onContinue: () => Nav.replace(context, const AdminLayout()),
         );
       }
+
+      if (!outcome && mounted) {
+        Navigator.pop(context);
+        showErrorDialog(
+          context,
+          'Errore durante l\'eliminazione del corso',
+          'Indietro',
+        );
+      }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);

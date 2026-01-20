@@ -67,18 +67,25 @@ class _AddChildState extends State<AddChild> {
         gender: _selectedValue,
       );
 
-      await _childService.addChild(_authService.currentUser!.uid, child);
+      final outcome = await _childService.addChild(
+        _authService.currentUser!.uid,
+        child,
+      );
 
-      if (mounted) {
+      if (outcome && mounted) {
         showSuccessDialog(
           context,
           'Registrazione avvenuta con successo!',
           onContinue: () => Nav.replace(context, const UserLayout()),
         );
       }
+
+      if (!outcome && mounted) {
+        showErrorDialog(context, 'Errore durante la registrazione', 'Indietro');
+      }
     } catch (e) {
       if (mounted) {
-        showErrorDialog(context, 'Errore durante la registrazione', 'Continua');
+        showErrorDialog(context, 'Errore durante la registrazione', 'Indietro');
       }
     } finally {
       setState(() {

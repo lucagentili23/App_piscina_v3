@@ -101,9 +101,19 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
       if (outcome && mounted) {
         Nav.replace(context, const UserLayout());
       }
+
+      if (!outcome && mounted) {
+        if (mounted) {
+          showErrorDialog(
+            context,
+            'Errore durante la cancellazione',
+            'Indietro',
+          );
+        }
+      }
     } catch (e) {
       if (mounted) {
-        showErrorDialog(context, 'Errore durante la cancellazione', 'Ok');
+        showErrorDialog(context, 'Errore durante la cancellazione', 'Indietro');
       }
     }
   }
@@ -119,18 +129,24 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
         displayedPhotoUrl: _user!.photoUrl,
       );
 
-      await _courseService.bookCourse(widget.courseId, [attendee]);
+      final outcome = await _courseService.bookCourse(widget.courseId, [
+        attendee,
+      ]);
 
-      if (mounted) {
+      if (outcome && mounted) {
         showSuccessDialog(
           context,
           'Prenotazione effettuata con successo!',
           onContinue: () => Nav.replace(context, const UserLayout()),
         );
       }
+
+      if (!outcome && mounted) {
+        showErrorDialog(context, 'Errore durante la prenotazione', 'Indietro');
+      }
     } catch (e) {
       if (mounted) {
-        showErrorDialog(context, 'Errore durante la prenotazione', 'Continua');
+        showErrorDialog(context, 'Errore durante la prenotazione', 'Indietro');
       }
     } finally {
       if (mounted) setState(() => _isBooking = false);
@@ -319,6 +335,16 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
         'Continua',
       );
       return;
+    }
+
+    if (_course!.maxSpots != null) {
+      if (_course!.bookedSpots == _course!.maxSpots) {
+        showAlertDialog(
+          context,
+          'Non sono più disponibili posti per questo corso',
+          'Indietro',
+        );
+      }
     }
 
     if (_children.isEmpty) {

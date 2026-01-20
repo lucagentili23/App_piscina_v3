@@ -122,7 +122,7 @@ class _ClientsState extends State<Clients> {
       await _userService.toggleUserStatus(uid);
 
       if (mounted) {
-        Navigator.pop(context); // Chiude il loader
+        Navigator.pop(context);
         showSuccessDialog(
           context,
           isDisabled
@@ -138,7 +138,7 @@ class _ClientsState extends State<Clients> {
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Chiude il loader
+        Navigator.pop(context);
         showErrorDialog(context, 'Errore', 'Chiudi');
       }
     }
@@ -164,12 +164,11 @@ class _ClientsState extends State<Clients> {
       await _userService.deleteUserAccount(uid);
 
       if (mounted) {
-        Navigator.pop(context); // Chiudi loader
+        Navigator.pop(context);
         showSuccessDialog(
           context,
           'Account eliminato definitivamente.',
           onContinue: () {
-            // Ricarichiamo la lista per far sparire l'utente eliminato
             setState(() {
               _isLoading = true;
             });
@@ -179,7 +178,7 @@ class _ClientsState extends State<Clients> {
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Chiudi loader
+        Navigator.pop(context);
         showErrorDialog(context, 'Errore durante l\'eliminazione', 'Chiudi');
       }
     }

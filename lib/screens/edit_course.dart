@@ -134,6 +134,15 @@ class _EditCourseState extends State<EditCourse> {
           onContinue: () => Nav.replace(context, const AdminLayout()),
         );
       }
+
+      if (!outcome && mounted) {
+        Navigator.pop(context);
+        showErrorDialog(
+          context,
+          'Errore durante la modifica del corso',
+          'Indietro',
+        );
+      }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);

@@ -91,8 +91,13 @@ class UserService {
     }
   }
 
-  Future<void> signOut() async {
-    await _firebaseAuth.signOut();
+  Future<bool> signOut() async {
+    try {
+      await _firebaseAuth.signOut();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> _createFirestoreUser({
@@ -202,7 +207,11 @@ class UserService {
         .collection('notifications')
         .where('read', isEqualTo: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs.isNotEmpty);
+        .map((snapshot) => snapshot.docs.isNotEmpty)
+        .handleError((error) {
+          debugPrint("Errore nello stream notifiche: $error");
+          return false;
+        });
   }
 
   Future<UserRole?> getUserRole() async {
@@ -251,6 +260,7 @@ class UserService {
       final querySnapshot = await _db
           .collection('users')
           .where('role', isEqualTo: 'user')
+          .orderBy('firstName')
           .get();
 
       final List<UserModel> users = querySnapshot.docs.map((doc) {
@@ -299,7 +309,6 @@ class UserService {
 
       return admins;
     } catch (e) {
-      print(e);
       return [];
     }
   }

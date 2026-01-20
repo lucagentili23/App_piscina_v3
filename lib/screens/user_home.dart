@@ -22,7 +22,7 @@ class UserHome extends StatefulWidget {
 }
 
 class _UserHomeState extends State<UserHome> {
-  final _authService = UserService();
+  final _userService = UserService();
   final _childService = ChildService();
   final _courseService = CourseService();
 
@@ -35,7 +35,7 @@ class _UserHomeState extends State<UserHome> {
   @override
   void initState() {
     _loadData();
-    _authService.saveDeviceToken();
+    _userService.saveDeviceToken();
     super.initState();
   }
 
@@ -46,7 +46,7 @@ class _UserHomeState extends State<UserHome> {
           _isLoading = true;
         });
       }
-      final user = await _authService.getUserData();
+      final user = await _userService.getUserData();
       List<Child> children = [];
       List<Map<String, dynamic>> bookedData = [];
 
@@ -59,9 +59,14 @@ class _UserHomeState extends State<UserHome> {
         _user = user;
         _children = children;
         _bookedData = bookedData;
-        _isLoading = false;
       });
     } catch (e) {
+      setState(() {
+        _user = null;
+        _children = [];
+        _bookedData = [];
+      });
+    } finally {
       setState(() {
         _isLoading = false;
       });
@@ -87,7 +92,7 @@ class _UserHomeState extends State<UserHome> {
       }
 
       final outcome = await _childService.deleteChild(
-        _authService.currentUser!.uid,
+        _userService.currentUser!.uid,
         childId,
       );
 
@@ -102,12 +107,21 @@ class _UserHomeState extends State<UserHome> {
           }),
         );
       }
+
+      if (!outcome && mounted) {
+        Navigator.pop(context);
+        showErrorDialog(
+          context,
+          'Errore durante la rimozione del figlio selezionato',
+          'Indietro',
+        );
+      }
     } catch (e) {
       if (mounted) {
         showErrorDialog(
           context,
-          'Errore durante la rimozione del figlio',
-          'Continua',
+          'Errore durante la rimozione del figlio selezionato',
+          'Indietro',
         );
       }
     }

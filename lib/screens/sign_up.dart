@@ -96,7 +96,7 @@ class _SigupState extends State<SignUp> {
           showErrorDialog(
             context,
             'Questa email è già associata ad un altro account',
-            'Continua',
+            'Indietro',
           );
           break;
         default:

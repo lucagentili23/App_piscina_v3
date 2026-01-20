@@ -15,7 +15,7 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  final _authService = UserService();
+  final _userService = UserService();
 
   @override
   void initState() {
@@ -24,17 +24,15 @@ class _SplashState extends State<Splash> {
   }
 
   void _splash() async {
-    //await Future.delayed(const Duration(seconds: 1));
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         final user = FirebaseAuth.instance.currentUser;
-        final authService = UserService();
+        final userService = UserService();
 
         if (user != null) {
           try {
             await user.reload();
-            final userRole = await authService.getUserRole();
+            final userRole = await userService.getUserRole();
 
             if (!mounted) return;
 
@@ -44,7 +42,7 @@ class _SplashState extends State<Splash> {
               Nav.replace(context, const UserLayout());
             }
           } catch (e) {
-            await _authService.signOut();
+            await _userService.signOut();
             if (!mounted) return;
             Nav.replace(context, const SignIn());
           }

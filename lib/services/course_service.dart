@@ -56,8 +56,6 @@ class CourseService {
     }
   }
 
-  // Crea casini? se usassi un metodo non straem e facessi aggiornare la pagina?
-  // Es. su youtube se caricano un video nuovo non c'è lo stream
   Stream<List<Course>> getCoursesStream() {
     return _db
         .collection('courses')
@@ -68,6 +66,9 @@ class CourseService {
           return snapshot.docs.map((doc) {
             return Course.fromMap(doc.data(), doc.id);
           }).toList();
+        })
+        .handleError((error) {
+          return <Course>[];
         });
   }
 
@@ -86,21 +87,21 @@ class CourseService {
     return null;
   }
 
-  Future<String?> bookCourse(String courseId, List<Attendee> attendees) async {
+  Future<bool> bookCourse(String courseId, List<Attendee> attendees) async {
     try {
       final courseRef = _db.collection('courses').doc(courseId);
 
       final courseSnapshot = await courseRef.get();
 
       if (!courseSnapshot.exists) {
-        throw 'Il corso non esiste più.';
+        return false;
       }
 
       final currentBooked = courseSnapshot.get('bookedSpots');
       final maxSpots = courseSnapshot.get('maxSpots');
 
       if (maxSpots != null && (currentBooked + attendees.length) > maxSpots) {
-        throw 'Posti insufficienti.';
+        return false;
       }
 
       for (var attendee in attendees) {
@@ -112,9 +113,9 @@ class CourseService {
 
       await courseRef.update({'bookedSpots': currentBooked + attendees.length});
 
-      return null;
+      return true;
     } catch (e) {
-      return null;
+      return false;
     }
   }
 
@@ -289,9 +290,13 @@ class CourseService {
           .orderBy('date')
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => Course.fromMap(doc.data(), doc.id))
-          .toList();
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs
+            .map((doc) => Course.fromMap(doc.data(), doc.id))
+            .toList();
+      } else {
+        return [];
+      }
     } catch (e) {
       return [];
     }

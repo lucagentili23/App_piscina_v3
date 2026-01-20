@@ -96,6 +96,14 @@ class _CreateCourseState extends State<CreateCourse> {
           onContinue: () => Nav.back(context),
         );
       }
+
+      if (!outcome && mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante la creazione del corso',
+          'Indietro',
+        );
+      }
     } catch (e) {
       if (mounted) {
         showErrorDialog(

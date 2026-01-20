@@ -69,7 +69,6 @@ class _EditChildState extends State<EditChild> {
     } catch (e) {
       setState(() {
         _child = null;
-        _isLoading = false;
       });
     } finally {
       setState(() {
@@ -99,7 +98,7 @@ class _EditChildState extends State<EditChild> {
                   _lastNameController.text.substring(1))
               .trim();
 
-      await _childService.editChild(
+      final outcome = await _childService.editChild(
         _userService.currentUser!.uid,
         _child!.id,
         firstName,
@@ -108,11 +107,19 @@ class _EditChildState extends State<EditChild> {
         _selectedValue,
       );
 
-      if (mounted) {
+      if (outcome && mounted) {
         showSuccessDialog(
           context,
           'Dati modificati con successo!',
           onContinue: () => Nav.replace(context, const UserLayout()),
+        );
+      }
+
+      if (!outcome && mounted) {
+        showErrorDialog(
+          context,
+          'Errore durante la modifica dei dati',
+          'Continua',
         );
       }
     } catch (e) {

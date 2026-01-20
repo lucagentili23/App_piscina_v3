@@ -83,18 +83,25 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
         }
       }
 
-      await _courseService.bookCourse(widget.courseId, attendeesToBook);
+      final outcome = await _courseService.bookCourse(
+        widget.courseId,
+        attendeesToBook,
+      );
 
-      if (mounted) {
+      if (outcome && mounted) {
         showSuccessDialog(
           context,
           'Prenotazione effettuata con successo!',
           onContinue: () => Nav.replace(context, const UserLayout()),
         );
       }
+
+      if (!outcome && mounted) {
+        showErrorDialog(context, 'Errore durante la prenotazione', 'Indietro');
+      }
     } catch (e) {
       if (mounted) {
-        showErrorDialog(context, 'Errore durante la prenotazione', 'Continua');
+        showErrorDialog(context, 'Errore durante la prenotazione', 'Indietro');
       }
     } finally {
       if (mounted) setState(() => _isBooking = false);
@@ -103,10 +110,8 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // Verifichiamo se il genitore è già prenotato
     final isParentBooked = widget.bookedAttendees.any((a) => a.childId == null);
 
-    // Filtriamo la lista dei figli per mostrare solo quelli NON prenotati
     final availableChildren = widget.children.where((child) {
       return !widget.bookedAttendees.any((a) => a.childId == child.id);
     }).toList();
@@ -142,7 +147,6 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
             Expanded(
               child: ListView(
                 children: [
-                  // Mostra il genitore solo se non è già prenotato
                   if (!isParentBooked)
                     CheckboxListTile(
                       secondary: const Icon(Icons.person),
@@ -158,7 +162,6 @@ class _BookingModalBottomSheetState extends State<BookingModalBottomSheet> {
                         });
                       },
                     ),
-                  // Mostra solo i figli non prenotati
                   ...availableChildren.map((child) {
                     return CheckboxListTile(
                       secondary: const Icon(Icons.child_care),

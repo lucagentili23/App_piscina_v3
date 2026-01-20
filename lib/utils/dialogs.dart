@@ -7,7 +7,7 @@ void showSuccessDialog(
 }) {
   showDialog(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     builder: (BuildContext dialogContext) {
       return AlertDialog(
         icon: const Icon(Icons.check_circle, color: Colors.green, size: 48.0),
@@ -50,7 +50,7 @@ void showErrorDialog(
 ) {
   showDialog(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     builder: (BuildContext dialogContext) {
       return AlertDialog(
         icon: const Icon(Icons.error, color: Colors.red, size: 48.0),
@@ -88,7 +88,7 @@ void showAlertDialog(
 ) {
   showDialog(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     builder: (BuildContext dialogContext) {
       return AlertDialog(
         icon: const Icon(Icons.warning, color: Colors.amber, size: 48.0),
@@ -122,7 +122,7 @@ void showAlertDialog(
 Future<bool> showConfirmDialog(BuildContext context, String message) async {
   final result = await showDialog<bool>(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     builder: (BuildContext dialogContext) {
       return AlertDialog(
         icon: const Icon(Icons.warning, color: Colors.amber, size: 48.0),

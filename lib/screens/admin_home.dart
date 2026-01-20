@@ -102,10 +102,11 @@ class _AdminHomeState extends State<AdminHome> {
       }
 
       if (!outcome && mounted) {
+        Navigator.pop(context);
         showErrorDialog(
           context,
           'Errore durante l\'esecuzione dell\'operazione',
-          'Continua',
+          'Indietro',
         );
       }
     } catch (e) {
@@ -113,7 +114,7 @@ class _AdminHomeState extends State<AdminHome> {
         showErrorDialog(
           context,
           'Errore durante l\'esecuzione dell\'operazione',
-          'Continua',
+          'Indietro',
         );
       }
     }

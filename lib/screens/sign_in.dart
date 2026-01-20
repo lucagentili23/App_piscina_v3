@@ -16,7 +16,7 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  final _authService = UserService();
+  final _userService = UserService();
   final _formKey = GlobalKey<FormState>();
 
   final _emailController = TextEditingController();
@@ -40,7 +40,7 @@ class _SignInState extends State<SignIn> {
     });
 
     try {
-      final user = await _authService.signIn(
+      final user = await _userService.signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
@@ -48,7 +48,7 @@ class _SignInState extends State<SignIn> {
       if (!mounted) return;
 
       if (user != null) {
-        final userRole = await _authService.getUserRole();
+        final userRole = await _userService.getUserRole();
 
         if (!mounted) return;
 
@@ -63,16 +63,16 @@ class _SignInState extends State<SignIn> {
         showErrorDialog(
           context,
           'L\'email o la password non coincidono',
-          'Riprova',
+          'Indietro',
         );
       } else if (e == 'too-many-requests') {
         showErrorDialog(
           context,
           'Troppe richieste, riprova più tardi',
-          'Continua',
+          'Indietro',
         );
       } else {
-        showErrorDialog(context, 'Qualcosa è andato storto', 'Continua');
+        showErrorDialog(context, 'Qualcosa è andato storto', 'Indietro');
       }
     } finally {
       if (mounted) {

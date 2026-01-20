@@ -3,6 +3,7 @@ import 'package:app_piscina_v3/screens/notifications.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/screens/user_home.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
+import 'package:app_piscina_v3/utils/dialogs.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,7 @@ class UserLayout extends StatefulWidget {
 }
 
 class _UserLayoutState extends State<UserLayout> {
-  final _authService = UserService();
+  final _userService = UserService();
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [const UserHome(), const Courses()];
@@ -22,11 +23,15 @@ class _UserLayoutState extends State<UserLayout> {
   final List<String> _titles = ['Home', 'Corsi'];
 
   void _signOut() async {
-    await _authService.signOut();
+    final success = await _userService.signOut();
 
     if (!mounted) return;
 
-    Nav.replace(context, SignIn());
+    if (success) {
+      Nav.replace(context, const SignIn());
+    } else {
+      showErrorDialog(context, 'Errore durante il logout', 'Indietro');
+    }
   }
 
   @override
@@ -37,18 +42,28 @@ class _UserLayoutState extends State<UserLayout> {
         centerTitle: true,
         actions: [
           if (_selectedIndex == 0) ...[
-            IconButton(
-              onPressed: () => Nav.to(context, const Notifications()),
-              icon: Badge(
-                smallSize: 10,
-                isLabelVisible: true,
-                backgroundColor: Colors.red,
-                child: Icon(Icons.notifications_outlined),
-              ),
+            StreamBuilder<bool>(
+              stream: _userService.unreadNotificationsStream,
+              initialData: false,
+              builder: (context, snapshot) {
+                final hasUnread = snapshot.data ?? false;
+
+                return IconButton(
+                  onPressed: () => Nav.to(context, const Notifications()),
+                  icon: hasUnread
+                      ? Badge(
+                          smallSize: 10,
+                          isLabelVisible: true,
+                          backgroundColor: Colors.red,
+                          child: const Icon(Icons.notifications_outlined),
+                        )
+                      : const Icon(Icons.notifications_outlined),
+                );
+              },
             ),
             IconButton(
               onPressed: () => _signOut(),
-              icon: Icon(Icons.exit_to_app),
+              icon: const Icon(Icons.exit_to_app),
             ),
           ],
         ],
