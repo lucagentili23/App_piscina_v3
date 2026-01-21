@@ -208,16 +208,13 @@ class _AdminHomeState extends State<AdminHome> {
                       ),
                       const SizedBox(height: 20),
                       if (_dailyCourses.isEmpty)
-                        Expanded(
-                          // Spinge il messaggio vuoto un po' più giù se serve, o semplicemente lo mostra
-                          child: Text(
-                            'Non sono previsti corsi per oggi',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                              fontStyle: FontStyle.italic,
-                            ),
+                        Text(
+                          'Non sono previsti corsi per oggi',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
                       if (_dailyCourses.isNotEmpty)
@@ -312,7 +309,6 @@ class _AdminHomeState extends State<AdminHome> {
                                 const SizedBox(height: 20),
                                 Text(
                                   'Non sono ancora presenti altri amministratori',
-                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.grey.shade600,

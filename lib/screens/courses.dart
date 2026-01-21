@@ -101,26 +101,44 @@ class _CoursesState extends State<Courses> {
     if (_courses.isEmpty) {
       return RefreshIndicator(
         onRefresh: _getCourses,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Center(
-                  child: Text(
-                    'Nessun corso ancora disponibile',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
-                      fontStyle: FontStyle.italic,
+        child: Stack(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Nessun corso ancora disponibile',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
                     ),
                   ),
+                );
+              },
+            ),
+            if (_role == UserRole.admin)
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: FloatingActionButton(
+                  onPressed: () {
+                    Nav.to(context, CreateCourse());
+                  },
+                  elevation: 6,
+                  child: const Icon(Icons.add),
                 ),
               ),
-            );
-          },
+          ],
         ),
       );
     }
