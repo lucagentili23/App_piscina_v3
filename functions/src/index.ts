@@ -49,8 +49,24 @@ export const deleteUserAccount = onCall(async (request) => {
       .collectionGroup("attendees")
       .where("userId", "==", uid)
       .get();
+
     const batch = db.batch();
-    attendeesSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+
+    attendeesSnapshot.docs.forEach((doc) => {
+      // Elimina il documento attendee
+      batch.delete(doc.ref);
+
+      // Ottieni il riferimento al corso padre
+      const courseRef = doc.ref.parent.parent;
+
+      // Decrementa bookedSpots se il riferimento al corso esiste
+      if (courseRef) {
+        batch.update(courseRef, {
+          bookedSpots: admin.firestore.FieldValue.increment(-1),
+        });
+      }
+    });
+
     await batch.commit();
 
     await admin.auth().deleteUser(uid);
