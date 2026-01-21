@@ -63,24 +63,25 @@ class ChildService {
     Gender gender,
   ) async {
     try {
-      await _db
+      WriteBatch batch = _db.batch();
+
+      final childRef = _db
           .collection('users')
           .doc(userId)
           .collection('children')
-          .doc(childId)
-          .update({
-            'firstName': firstName,
-            'lastName': lastName,
-            'photoUrl': photoUrl,
-            'gender': gender.name,
-          });
+          .doc(childId);
+
+      batch.update(childRef, {
+        'firstName': firstName,
+        'lastName': lastName,
+        'photoUrl': photoUrl,
+        'gender': gender.name,
+      });
 
       final attendeesSnapshot = await _db
           .collectionGroup('attendees')
           .where('childId', isEqualTo: childId)
           .get();
-
-      WriteBatch batch = _db.batch();
 
       for (var doc in attendeesSnapshot.docs) {
         batch.update(doc.reference, {

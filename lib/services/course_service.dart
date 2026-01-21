@@ -99,21 +99,25 @@ class CourseService {
         return false;
       }
 
-      final currentBooked = courseSnapshot.get('bookedSpots');
+      final currentBooked = courseSnapshot.get('bookedSpots') ?? 0;
       final maxSpots = courseSnapshot.get('maxSpots');
 
       if (maxSpots != null && (currentBooked + attendees.length) > maxSpots) {
         return false;
       }
 
+      WriteBatch batch = _db.batch();
+
       for (var attendee in attendees) {
         final attendeeRef = courseRef.collection('attendees').doc();
-        final data = attendee.toMap();
-
-        await attendeeRef.set(data);
+        batch.set(attendeeRef, attendee.toMap());
       }
 
-      await courseRef.update({'bookedSpots': currentBooked + attendees.length});
+      batch.update(courseRef, {
+        'bookedSpots': FieldValue.increment(attendees.length),
+      });
+
+      await batch.commit();
 
       return true;
     } catch (e) {
@@ -152,9 +156,12 @@ class CourseService {
       final Map<String, List<String>> courseAttendeesMap = {};
 
       for (var doc in querySnapshot.docs) {
-        final courseId = doc.reference.parent.parent!.id;
+        final courseRef = doc.reference.parent.parent;
+        if (courseRef == null) continue;
+
+        final courseId = courseRef.id;
         final data = doc.data();
-        final name = data['displayedName'];
+        final name = data['displayedName'] ?? '';
 
         if (!courseAttendeesMap.containsKey(courseId)) {
           courseAttendeesMap[courseId] = [];
@@ -162,10 +169,19 @@ class CourseService {
         courseAttendeesMap[courseId]!.add(name);
       }
 
+      List<String> uniqueCourseIds = courseAttendeesMap.keys.toList();
+      List<Future<Course?>> futures = [];
+
+      for (String id in uniqueCourseIds) {
+        futures.add(getCourseById(id));
+      }
+
+      final List<Course?> coursesResults = await Future.wait(futures);
       List<Map<String, dynamic>> results = [];
 
-      for (String courseId in courseAttendeesMap.keys) {
-        final course = await getCourseById(courseId);
+      for (int i = 0; i < coursesResults.length; i++) {
+        final course = coursesResults[i];
+        final courseId = uniqueCourseIds[i];
 
         if (course != null && course.date.isAfter(DateTime.now())) {
           results.add({
@@ -244,9 +260,12 @@ class CourseService {
         return false;
       }
 
-      await attendeeRef.delete();
+      WriteBatch batch = _db.batch();
 
-      await courseRef.update({'bookedSpots': FieldValue.increment(-1)});
+      batch.delete(attendeeRef);
+      batch.update(courseRef, {'bookedSpots': FieldValue.increment(-1)});
+
+      await batch.commit();
 
       return true;
     } catch (e) {

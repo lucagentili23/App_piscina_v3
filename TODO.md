@@ -5,7 +5,6 @@ OBBLIGATORI
 - [x] Coerenza di testi, font ecc
 - [x] Verifica che i testi siano allineati centralmente dove necessario (textAlign: TextAlign.center)
 - [x] Quando un utente viene disabilitato o eliminato deve venire fatto il logout
-- [ ] Se non c'è rete notifica opportunamente con gli errori
 - [x] Overflow pulsanti schermata clienti
 - [x] Controlla dimensioni pulsanti e altri widgets (rendile uguali)
 - [x] Aggiorna le pagine dopo ogni operazione che necessita di aggiornamento
@@ -13,7 +12,7 @@ OBBLIGATORI
 - [x] Verifica che durante i caricamenti non si possano effettuare altre operazioni
 - [x] Controlla che ci siano i dispose dove ci sono campi di inserimeto testo o simili
 - [x] controlla se vale la pena mantenere gli stream dove creati
-- [ ] Cerca di otimizzare le chiamate al db (usa batch dove necessario)
+- [x] Cerca di otimizzare le chiamate al db (usa batch dove necessario)
 - [ ] Le operazioni devono essere eseguite in parallelo (se la connessione cade tra due operazioni sul db è un problema)
 - [ ] Controlla se nelle schermate ci sono operazioni che potrebbero essere eseguite in parallelo (ad esempio quando carica i dati)
 - [x] Centra tutti i titoli nelle appbar (su andorid non sono centrati)
@@ -30,3 +29,4 @@ FACOLTATIVI
 - [ ] Controlla se ci sono metodi helper o aree di codice unificabili o riutilizzabili
 - [x] Sistema colore icona corso tra sezione corsi e user home (in user home è più scuro)
 - [ ] Contorlla e sistema eventuali problemi di oerflow nelle schermate
+- [ ] Se non c'è rete notifica opportunamente con gli errori
