@@ -65,6 +65,12 @@ class _SignInState extends State<SignIn> {
           'L\'email o la password non coincidono',
           'Indietro',
         );
+      } else if (e == 'user-disabled') {
+        showErrorDialog(
+          context,
+          'Il tuo account è stato disabilitato da un amministratore',
+          'Indietro',
+        );
       } else if (e == 'too-many-requests') {
         showErrorDialog(
           context,

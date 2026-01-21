@@ -1,5 +1,6 @@
 import 'package:app_piscina_v3/layouts/user_layout.dart';
 import 'package:app_piscina_v3/models/child.dart';
+import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
@@ -16,14 +17,13 @@ class AddChild extends StatefulWidget {
 }
 
 class _AddChildState extends State<AddChild> {
-  final _authService = UserService();
+  final _userService = UserService();
   final _childService = ChildService();
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
 
-  bool _isLoading = false;
   Gender _selectedValue = Gender.m;
 
   List<DropdownMenuEntry<Gender>> sexEntries = [
@@ -39,13 +39,35 @@ class _AddChildState extends State<AddChild> {
   }
 
   Future<void> _addChild() async {
-    setState(() {
-      _isLoading = true;
-    });
-
     if (!_formKey.currentState!.validate()) return;
 
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     try {
+      final isAllowed = await _userService.canUserDoIt();
+
+      if (!isAllowed) {
+        if (mounted) {
+          Navigator.pop(context);
+
+          await _userService.signOut();
+
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const SignIn()),
+              (route) => false,
+            );
+          }
+        }
+        return;
+      }
+
       final photoUrl = _selectedValue == Gender.m
           ? 'assets/images/Immagine_profilo_m.png'
           : 'assets/images/Immagine_profilo_f.png';
@@ -68,29 +90,32 @@ class _AddChildState extends State<AddChild> {
       );
 
       final outcome = await _childService.addChild(
-        _authService.currentUser!.uid,
+        _userService.currentUser!.uid,
         child,
       );
 
-      if (outcome && mounted) {
-        showSuccessDialog(
-          context,
-          'Registrazione avvenuta con successo!',
-          onContinue: () => Nav.replace(context, const UserLayout()),
-        );
-      }
+      if (mounted) {
+        Navigator.pop(context);
 
-      if (!outcome && mounted) {
-        showErrorDialog(context, 'Errore durante la registrazione', 'Indietro');
+        if (outcome) {
+          showSuccessDialog(
+            context,
+            'Registrazione avvenuta con successo!',
+            onContinue: () => Nav.replace(context, const UserLayout()),
+          );
+        } else {
+          showErrorDialog(
+            context,
+            'Errore durante la registrazione',
+            'Indietro',
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
-        showErrorDialog(context, 'Errore durante la registrazione', 'Indietro');
+        Navigator.pop(context);
+        showErrorDialog(context, 'Errore imprevisto', 'Indietro');
       }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -143,12 +168,10 @@ class _AddChildState extends State<AddChild> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                child: _isLoading
-                    ? CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: _isLoading ? null : _addChild,
-                        child: Text('Registra', style: TextStyle(fontSize: 20)),
-                      ),
+                child: ElevatedButton(
+                  onPressed: _addChild,
+                  child: Text('Registra', style: TextStyle(fontSize: 20)),
+                ),
               ),
             ],
           ),

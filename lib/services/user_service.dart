@@ -81,6 +81,8 @@ class UserService {
           e.code == 'wrong-password' ||
           e.code == 'invalid-credential') {
         throw 'user-not-found';
+      } else if (e.code == 'user-disabled') {
+        throw 'user-disabled';
       } else if (e.code == 'too-many-requests') {
         throw 'too-many-requests';
       } else {
@@ -228,6 +230,35 @@ class UserService {
           debugPrint("Errore nello stream notifiche: $error");
           return false;
         });
+  }
+
+  Future<bool> canUserDoIt() async {
+    try {
+      final user = _firebaseAuth.currentUser;
+
+      if (user == null) {
+        return false;
+      }
+
+      try {
+        await user.reload();
+      } catch (e) {
+        return false;
+      }
+
+      final doc = await _db.collection('users').doc(user.uid).get();
+
+      if (!doc.exists) {
+        return false;
+      }
+
+      final isDisabled = doc.data()?['isDisabled'] ?? false;
+
+      return !isDisabled;
+    } catch (e) {
+      debugPrint("Errore controllo permessi: $e");
+      return false;
+    }
   }
 
   Future<UserRole?> getUserRole() async {

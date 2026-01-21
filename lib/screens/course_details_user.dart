@@ -3,6 +3,7 @@ import 'package:app_piscina_v3/models/attendee.dart';
 import 'package:app_piscina_v3/models/child.dart';
 import 'package:app_piscina_v3/models/course.dart';
 import 'package:app_piscina_v3/models/user_model.dart';
+import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/services/child_service.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
@@ -75,6 +76,16 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
     }
   }
 
+  Future<void> _handleForcedLogout() async {
+    await _authService.signOut();
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const SignIn()),
+        (route) => false,
+      );
+    }
+  }
+
   Future<void> _unbook(String attendeeDocId) async {
     try {
       final confirm = await showConfirmDialog(
@@ -83,6 +94,12 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
       );
 
       if (!confirm) return;
+
+      final isAllowed = await _authService.canUserDoIt();
+      if (!isAllowed) {
+        await _handleForcedLogout();
+        return;
+      }
 
       if (mounted) {
         showDialog(
@@ -103,16 +120,12 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
       }
 
       if (!outcome && mounted) {
-        if (mounted) {
-          showErrorDialog(
-            context,
-            'Errore durante la cancellazione',
-            'Indietro',
-          );
-        }
+        Navigator.of(context, rootNavigator: true).pop();
+        showErrorDialog(context, 'Errore durante la cancellazione', 'Indietro');
       }
     } catch (e) {
       if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
         showErrorDialog(context, 'Errore durante la cancellazione', 'Indietro');
       }
     }
@@ -347,46 +360,62 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
     );
   }
 
-  void _handleBookingPress() {
+  Future<void> _handleBookingPress() async {
     if (_isBooking) return;
+
+    final isAllowed = await _authService.canUserDoIt();
+    if (!isAllowed) {
+      await _handleForcedLogout();
+      return;
+    }
+
     if (_attendees.length == _children.length + 1) {
-      showAlertDialog(
-        context,
-        'Sia tu che tutti i tuoi figli siete già iscritti a questo corso',
-        'Continua',
-      );
+      if (mounted) {
+        showAlertDialog(
+          context,
+          'Sia tu che tutti i tuoi figli siete già iscritti a questo corso',
+          'Continua',
+        );
+      }
       return;
     }
 
     if (!_course!.isBookingOpen) {
-      showAlertDialog(
-        context,
-        'Le prenotazioni per questo corso non sono ancora aperte',
-        'Continua',
-      );
+      if (mounted) {
+        showAlertDialog(
+          context,
+          'Le prenotazioni per questo corso non sono ancora aperte',
+          'Continua',
+        );
+      }
       return;
     }
 
     if (_course!.maxSpots != null) {
       if (_course!.bookedSpots == _course!.maxSpots) {
-        showAlertDialog(
-          context,
-          'Non sono più disponibili posti per questo corso',
-          'Indietro',
-        );
+        if (mounted) {
+          showAlertDialog(
+            context,
+            'Non sono più disponibili posti per questo corso',
+            'Indietro',
+          );
+        }
+        return;
       }
     }
 
     if (_children.isEmpty) {
-      _bookUserDirectly();
+      await _bookUserDirectly();
     } else {
-      BookingModalBottomSheet.show(
-        context,
-        courseId: widget.courseId,
-        user: _user!,
-        children: _children,
-        bookedAttendees: _attendees,
-      );
+      if (mounted) {
+        BookingModalBottomSheet.show(
+          context,
+          courseId: widget.courseId,
+          user: _user!,
+          children: _children,
+          bookedAttendees: _attendees,
+        );
+      }
     }
   }
 }
