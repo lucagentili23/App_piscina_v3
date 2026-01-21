@@ -56,20 +56,22 @@ class CourseService {
     }
   }
 
-  Stream<List<Course>> getCoursesStream() {
-    return _db
-        .collection('courses')
-        .where('date', isGreaterThanOrEqualTo: DateTime.now())
-        .orderBy('date')
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            return Course.fromMap(doc.data(), doc.id);
-          }).toList();
-        })
-        .handleError((error) {
-          return <Course>[];
-        });
+  Future<List<Course>> getCourses() async {
+    try {
+      final querySnapshot = await _db
+          .collection('courses')
+          .where('date', isGreaterThanOrEqualTo: DateTime.now())
+          .orderBy('date')
+          .get();
+
+      final List<Course> courses = querySnapshot.docs.map((doc) {
+        return Course.fromMap(doc.data(), doc.id);
+      }).toList();
+
+      return courses;
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<Course?> getCourseById(String id) async {

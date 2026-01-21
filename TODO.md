@@ -12,7 +12,7 @@ OBBLIGATORI
 - [x] Rendi pagine aggiornabili dove necessario
 - [x] Verifica che durante i caricamenti non si possano effettuare altre operazioni
 - [x] Controlla che ci siano i dispose dove ci sono campi di inserimeto testo o simili
-- [ ] controlla se vale la pena mantenere gli stream dove creati
+- [x] controlla se vale la pena mantenere gli stream dove creati
 - [ ] Cerca di otimizzare le chiamate al db (usa batch dove necessario)
 - [ ] Le operazioni devono essere eseguite in parallelo (se la connessione cade tra due operazioni sul db è un problema)
 - [ ] Controlla se nelle schermate ci sono operazioni che potrebbero essere eseguite in parallelo (ad esempio quando carica i dati)
@@ -20,7 +20,7 @@ OBBLIGATORI
 - [ ] Aggiungi scorrimento con caricamento per liste troppo lunghe come ad esempio notifiche (meglio se metti tutto max 10 elementi poi si aggiungono altri)
 - [x] Cambia grafica schermata clienti
 - [x] Metti super.initstate() come prima funzione chiamata
-- [ ] Rimuovi stream da courses se necessario
+- [x] Rimuovi stream da courses se necessario
 - [ ] Crea funzione che elimina corsi vecchi più di due settimane
 - [ ] Crea funzione che elimina notifiche vecchie più di due settimane
 

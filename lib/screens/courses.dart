@@ -21,17 +21,26 @@ class _CoursesState extends State<Courses> {
   final _courseService = CourseService();
   final _userService = UserService();
   UserRole? _role;
+  List<Course> _courses = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadRole();
+    _getCourses();
   }
 
   Future<void> _loadRole() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
+
       final role = await _userService.getUserRole();
+
+      if (!mounted) return;
+
       if (mounted) {
         setState(() {
           _role = role;
@@ -42,11 +51,35 @@ class _CoursesState extends State<Courses> {
       setState(() {
         _role = null;
       });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _getCourses() async {
+    try {
+      final courses = await _courseService.getCourses();
+
+      if (!mounted) return;
+
+      setState(() {
+        _courses = courses;
+      });
+    } catch (e) {
+      setState(() {
+        _courses = [];
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     if (_role == null) {
       return Center(
         child: Column(
@@ -65,62 +98,59 @@ class _CoursesState extends State<Courses> {
       );
     }
 
-    return Stack(
-      children: [
-        StreamBuilder<List<Course>>(
-          stream: _courseService.getCoursesStream(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Errore durante il caricamento dei corsi',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
-              );
-            }
-
-            final courses = snapshot.data ?? [];
-
-            if (courses.isEmpty) {
-              return Center(
-                child: Text(
-                  'Nessun corso ancora disponibile',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey.shade600,
+    if (_courses.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _getCourses,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
+                  child: Text(
+                    'Nessun corso ancora disponibile',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ),
-              );
-            }
-
-            return ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              itemCount: courses.length,
-              itemBuilder: (context, index) {
-                return _buildCourseCard(courses[index]);
-              },
+              ),
             );
           },
         ),
-        if (_role == UserRole.admin)
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                Nav.to(context, CreateCourse());
-              },
-              elevation: 6,
-              child: const Icon(Icons.add),
-            ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _getCourses,
+      child: Stack(
+        children: [
+          ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            itemCount: _courses.length,
+            itemBuilder: (context, index) {
+              return _buildCourseCard(_courses[index]);
+            },
           ),
-      ],
+
+          if (_role == UserRole.admin)
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: () {
+                  Nav.to(context, CreateCourse());
+                },
+                elevation: 6,
+                child: const Icon(Icons.add),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

@@ -85,6 +85,8 @@ class UserService {
         throw 'user-disabled';
       } else if (e.code == 'too-many-requests') {
         throw 'too-many-requests';
+      } else if (e.code == 'invalid-email') {
+        throw 'invalid-email';
       } else {
         throw 'unknown-error';
       }

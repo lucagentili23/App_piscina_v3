@@ -191,15 +191,28 @@ class _ClientsState extends State<Clients> {
     }
 
     if (_users.isEmpty) {
-      return Center(
-        child: Text(
-          'Nessun cliente ancora registrato',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            fontStyle: FontStyle.italic,
-            color: Colors.grey.shade600,
-          ),
+      return RefreshIndicator(
+        onRefresh: _getUsers,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
+                  child: Text(
+                    'Nessun cliente ancora registrato',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       );
     }

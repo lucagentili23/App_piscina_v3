@@ -71,6 +71,8 @@ class _SignInState extends State<SignIn> {
           'Il tuo account è stato disabilitato da un amministratore',
           'Indietro',
         );
+      } else if (e == 'invalid-email') {
+        showErrorDialog(context, 'Email non valida', 'Indietro');
       } else if (e == 'too-many-requests') {
         showErrorDialog(
           context,
