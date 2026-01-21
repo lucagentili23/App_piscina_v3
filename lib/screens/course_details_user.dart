@@ -46,19 +46,38 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
 
   Future<void> _loadData() async {
     try {
-      final courseData = await _courseService.getCourseById(widget.courseId);
-      final userData = await _authService.getUserData();
+      final courseFuture = _courseService.getCourseById(widget.courseId);
+      final userFuture = _authService.getUserData();
+
+      final results = await Future.wait([courseFuture, userFuture]);
+
+      final courseData = results[0] as Course?;
+      final userData = results[1] as UserModel?;
+
       List<Child> children = [];
       bool isBooked = false;
       List<Attendee> attendees = [];
 
       if (userData != null) {
-        children = await _childService.getChildren(userData.id);
-        isBooked = await _courseService.isBooked(userData.id, widget.courseId);
-        attendees = await _courseService.getCourseAttendeesForUser(
+        final childrenFuture = _childService.getChildren(userData.id);
+        final isBookedFuture = _courseService.isBooked(
+          userData.id,
+          widget.courseId,
+        );
+        final attendeesFuture = _courseService.getCourseAttendeesForUser(
           widget.courseId,
           userData.id,
         );
+
+        final secondaryResults = await Future.wait([
+          childrenFuture,
+          isBookedFuture,
+          attendeesFuture,
+        ]);
+
+        children = secondaryResults[0] as List<Child>;
+        isBooked = secondaryResults[1] as bool;
+        attendees = secondaryResults[2] as List<Attendee>;
       }
 
       if (mounted) {

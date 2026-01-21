@@ -364,7 +364,25 @@ class UserService {
 
   Future<bool> makeAdmin(String userId) async {
     try {
-      await _db.collection('users').doc(userId).update({'role': 'admin'});
+      WriteBatch batch = _db.batch();
+
+      final userRef = _db.collection('users').doc(userId);
+
+      batch.update(userRef, {'role': 'admin'});
+
+      final childrenSnapshot = await userRef.collection('children').get();
+      for (var doc in childrenSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final notificationsSnapshot = await userRef
+          .collection('notifications')
+          .get();
+      for (var doc in notificationsSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      batch.commit();
       return true;
     } catch (e) {
       return false;

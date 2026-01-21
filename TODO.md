@@ -13,15 +13,15 @@ OBBLIGATORI
 - [x] Controlla che ci siano i dispose dove ci sono campi di inserimeto testo o simili
 - [x] controlla se vale la pena mantenere gli stream dove creati
 - [x] Cerca di otimizzare le chiamate al db (usa batch dove necessario)
-- [ ] Le operazioni devono essere eseguite in parallelo (se la connessione cade tra due operazioni sul db è un problema)
-- [ ] Controlla se nelle schermate ci sono operazioni che potrebbero essere eseguite in parallelo (ad esempio quando carica i dati)
+- [x] Le operazioni devono essere eseguite in parallelo (se la connessione cade tra due operazioni sul db è un problema)
+- [x] Controlla se nelle schermate ci sono operazioni che potrebbero essere eseguite in parallelo (ad esempio quando carica i dati)
 - [x] Centra tutti i titoli nelle appbar (su andorid non sono centrati)
-- [ ] Aggiungi scorrimento con caricamento per liste troppo lunghe come ad esempio notifiche (meglio se metti tutto max 10 elementi poi si aggiungono altri)
 - [x] Cambia grafica schermata clienti
 - [x] Metti super.initstate() come prima funzione chiamata
 - [x] Rimuovi stream da courses se necessario
 - [ ] Crea funzione che elimina corsi vecchi più di due settimane
 - [ ] Crea funzione che elimina notifiche vecchie più di due settimane
+- [x] Quando cliente diventa admin, rimuovilo dai corsi e rimuovigli i figli e le noitfiche
 
 FACOLTATIVI
 
@@ -30,3 +30,4 @@ FACOLTATIVI
 - [x] Sistema colore icona corso tra sezione corsi e user home (in user home è più scuro)
 - [ ] Contorlla e sistema eventuali problemi di oerflow nelle schermate
 - [ ] Se non c'è rete notifica opportunamente con gli errori
+- [ ] Aggiungi scorrimento con caricamento per liste troppo lunghe come ad esempio notifiche (meglio se metti tutto max 10 elementi poi si aggiungono altri)
