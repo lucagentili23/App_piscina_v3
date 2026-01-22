@@ -169,8 +169,10 @@ class _AdminHomeState extends State<AdminHome> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Bentornato,',
+                              Text(
+                                _user!.gender == Gender.m
+                                    ? 'Bentornato,'
+                                    : 'Bentornata,',
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
