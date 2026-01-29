@@ -256,7 +256,7 @@ export const onAttendeeRemoved = onDocumentDeleted(
       await sendNotificationToUser(
         data.userId,
         "Prenotazione Cancellata",
-        `Un amministratore ha rimosso ${data.displayedName} dal corso del ${dateStr}.`,
+        `${data.displayedName} è stato/a rimosso/a dal corso del ${dateStr}.`,
       );
     }
   },

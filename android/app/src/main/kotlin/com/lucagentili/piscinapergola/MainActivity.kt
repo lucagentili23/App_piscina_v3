@@ -1,4 +1,4 @@
-package com.example.app_piscina_v3
+package com.lucagentili.piscinapergola
 
 import io.flutter.embedding.android.FlutterActivity
 
