@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.appPiscinaV3</string>
+	<string>com.lucagentili.piscinapergola</string>
 	<key>PROJECT_ID</key>
 	<string>app-piscina-v3</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:287633563900:ios:cdde9c7f07d35033f87779</string>
+	<string>1:287633563900:ios:82392636488c0967f87779</string>
 </dict>
 </plist>
