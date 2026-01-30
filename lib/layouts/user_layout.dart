@@ -1,5 +1,6 @@
 import 'package:app_piscina_v3/screens/courses.dart';
 import 'package:app_piscina_v3/screens/notifications.dart';
+import 'package:app_piscina_v3/screens/settings.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/screens/user_home.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
@@ -18,9 +19,13 @@ class _UserLayoutState extends State<UserLayout> {
   final _userService = UserService();
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [const UserHome(), const Courses()];
+  final List<Widget> _screens = [
+    const UserHome(),
+    const Courses(),
+    const Settings(),
+  ];
 
-  final List<String> _titles = ['Home', 'Corsi'];
+  final List<String> _titles = ['Home', 'Corsi', 'Impostazioni'];
 
   void _signOut() async {
     final confirm = await showConfirmDialog(
@@ -89,6 +94,10 @@ class _UserLayoutState extends State<UserLayout> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Corsi'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Impostazioni',
+          ),
         ],
       ),
     );

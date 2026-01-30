@@ -7,6 +7,7 @@ import 'package:app_piscina_v3/utils/enums.dart';
 import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:app_piscina_v3/utils/validators.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -88,6 +89,15 @@ class _SignInState extends State<SignIn> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _launchPrivacyUrl() async {
+    final Uri url = Uri.parse(
+      'https://lucagentili23.github.io/piscina-pergola-legal/',
+    );
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
     }
   }
 
@@ -180,9 +190,14 @@ class _SignInState extends State<SignIn> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 10),
                             ],
                           ),
                         ),
+                      ),
+                      TextButton(
+                        onPressed: () => _launchPrivacyUrl(),
+                        child: Text('Visualizza Privacy Policy'),
                       ),
                     ],
                   ),

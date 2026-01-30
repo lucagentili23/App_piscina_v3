@@ -2,6 +2,7 @@ import 'package:app_piscina_v3/screens/admin_home.dart';
 import 'package:app_piscina_v3/screens/clients.dart';
 import 'package:app_piscina_v3/screens/courses.dart';
 import 'package:app_piscina_v3/screens/notifications.dart';
+import 'package:app_piscina_v3/screens/settings.dart';
 import 'package:app_piscina_v3/screens/sign_in.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
@@ -24,9 +25,10 @@ class _AdminLayoutState extends State<AdminLayout> {
     const AdminHome(),
     const Courses(),
     const Clients(),
+    const Settings(),
   ];
 
-  final List<String> _titles = ['Home', 'Corsi', 'Clienti'];
+  final List<String> _titles = ['Home', 'Corsi', 'Clienti', 'Impostazioni'];
 
   void _signOut() async {
     final confirm = await showConfirmDialog(
@@ -104,6 +106,10 @@ class _AdminLayoutState extends State<AdminLayout> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Corsi'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Clienti'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Impostazioni',
+          ),
         ],
       ),
     );
