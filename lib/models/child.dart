@@ -21,7 +21,9 @@ class Child {
       firstName: data['firstName'] ?? '',
       lastName: data['lastName'] ?? '',
       photoUrl: data['photoUrl'] ?? '',
-      gender: data['gender'] == 'm' ? Gender.m : Gender.f,
+      gender: data['gender'] == 'm'
+          ? Gender.m
+          : (data['gender'] == 'f' ? Gender.f : Gender.x),
     );
   }
 

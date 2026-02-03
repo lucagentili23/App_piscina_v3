@@ -1,4 +1,5 @@
 import 'package:app_piscina_v3/layouts/admin_layout.dart';
+import 'package:app_piscina_v3/layouts/guest_layout.dart';
 import 'package:app_piscina_v3/layouts/user_layout.dart';
 import 'package:app_piscina_v3/screens/sign_up.dart';
 import 'package:app_piscina_v3/services/user_service.dart';
@@ -42,7 +43,7 @@ class _SignInState extends State<SignIn> {
 
     try {
       final user = await _userService.signIn(
-        email: _emailController.text,
+        email: _emailController.text.toLowerCase().trim(),
         password: _passwordController.text,
       );
 
@@ -136,6 +137,7 @@ class _SignInState extends State<SignIn> {
                               TextFormField(
                                 controller: _emailController,
                                 validator: Validators.validateEmailSignIn,
+                                keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
                                   label: const Text('Email'),
                                   prefixIcon: Icon(Icons.email),
@@ -191,6 +193,20 @@ class _SignInState extends State<SignIn> {
                                 ],
                               ),
                               const SizedBox(height: 10),
+                              const Row(
+                                children: [
+                                  Expanded(child: Divider()),
+                                  SizedBox(width: 10),
+                                  Text('Oppure'),
+                                  SizedBox(width: 10),
+                                  Expanded(child: Divider()),
+                                ],
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Nav.replace(context, GuestLayout()),
+                                child: Text('Accedi come ospite'),
+                              ),
                             ],
                           ),
                         ),

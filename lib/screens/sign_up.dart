@@ -34,6 +34,7 @@ class _SigupState extends State<SignUp> {
   List<DropdownMenuEntry<Gender>> sexEntries = [
     DropdownMenuEntry(value: Gender.m, label: "Maschio"),
     DropdownMenuEntry(value: Gender.f, label: "Femmina"),
+    DropdownMenuEntry(value: Gender.x, label: "Preferisco non dirlo"),
   ];
 
   @override
@@ -65,7 +66,7 @@ class _SigupState extends State<SignUp> {
 
     try {
       final user = await _authService.signUp(
-        email: _emailController.text,
+        email: _emailController.text.toLowerCase().trim(),
         password: _passwordController.text,
         name: name,
         lastName: lastName,
@@ -188,6 +189,7 @@ class _SigupState extends State<SignUp> {
                               TextFormField(
                                 controller: _emailController,
                                 validator: Validators.validateEmail,
+                                keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
                                   label: const Text('Email'),
                                   prefixIcon: Icon(Icons.email),
@@ -201,6 +203,7 @@ class _SigupState extends State<SignUp> {
                                       value,
                                       _emailController.text,
                                     ),
+                                keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
                                   label: const Text('Conferma email'),
                                   prefixIcon: Icon(Icons.email),

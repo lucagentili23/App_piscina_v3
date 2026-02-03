@@ -174,9 +174,7 @@ class _UserHomeState extends State<UserHome> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _user!.gender == Gender.m
-                                    ? 'Bentornato,'
-                                    : 'Bentornata,',
+                                'Ciao,',
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,

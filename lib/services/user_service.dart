@@ -114,6 +114,15 @@ class UserService {
   }) async {
     final userRef = _db.collection('users').doc(user.uid);
 
+    String photoUrl;
+    if (gender == Gender.m) {
+      photoUrl = 'assets/images/Immagine_profilo_m.png';
+    } else if (gender == Gender.f) {
+      photoUrl = 'assets/images/Immagine_profilo_f.png';
+    } else {
+      photoUrl = 'assets/images/Immagine_profilo_x.png';
+    }
+
     await userRef.set({
       'id': user.uid,
       'email': email,
@@ -123,9 +132,7 @@ class UserService {
       'role': role.name,
       'isDisabled': false,
       'createdAt': FieldValue.serverTimestamp(),
-      'photoUrl': gender == Gender.m
-          ? 'assets/images/Immagine_profilo_m.png'
-          : 'assets/images/Immagine_profilo_f.png',
+      'photoUrl': photoUrl,
     });
   }
 

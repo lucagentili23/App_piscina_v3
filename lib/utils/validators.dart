@@ -1,16 +1,17 @@
 class Validators {
   static final RegExp nameRegex = RegExp(r'^[a-zA-Z ]+$');
-  static final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  static final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$');
 
   static String? validateName(String? value) {
     if (value == null || value.isEmpty) return 'Inserisci il nome';
-    if (!nameRegex.hasMatch(value)) return 'Inserisci solo lettere';
+    if (!nameRegex.hasMatch(value.trim())) return 'Inserisci solo lettere';
     return null;
   }
 
   static String? validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'Inserire l\'email';
-    if (!emailRegex.hasMatch(value)) return 'L\'email inserita non è valida';
+    if (!emailRegex.hasMatch(value.trim()))
+      return 'L\'email inserita non è valida';
     return null;
   }
 
@@ -18,7 +19,9 @@ class Validators {
     if (value == null || value.isEmpty) {
       return 'L\'email deve essere confermata';
     }
-    if (value != originalEmail) return 'Le email non coincidono';
+    if (value.toLowerCase().trim() != originalEmail.toLowerCase().trim()) {
+      return 'Le email non coincidono';
+    }
     return null;
   }
 

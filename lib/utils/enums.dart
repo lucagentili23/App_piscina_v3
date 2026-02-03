@@ -2,4 +2,4 @@ enum UserRole { admin, user }
 
 enum CourseType { nuoto, idrobike }
 
-enum Gender { m, f }
+enum Gender { m, f, x }

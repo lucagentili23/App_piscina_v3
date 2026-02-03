@@ -80,24 +80,6 @@ class _CoursesState extends State<Courses> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_role == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text(
-              "Errore durante il caricamento dei dati.",
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadRole, child: const Text("Riprova")),
-          ],
-        ),
-      );
-    }
-
     if (_courses.isEmpty) {
       return RefreshIndicator(
         onRefresh: _getCourses,
@@ -183,12 +165,11 @@ class _CoursesState extends State<Courses> {
         onTap: _isLoading
             ? null
             : () {
-                Nav.to(
-                  context,
-                  _role == UserRole.admin
-                      ? CourseDetailsAdmin(courseId: course.id)
-                      : CourseDetailsUser(courseId: course.id),
-                );
+                if (_role == UserRole.admin) {
+                  Nav.to(context, CourseDetailsAdmin(courseId: course.id));
+                } else {
+                  Nav.to(context, CourseDetailsUser(courseId: course.id));
+                }
               },
         child: ListTile(
           leading: Container(

@@ -27,7 +27,9 @@ class UserModel {
       firstName: data['firstName'] ?? '',
       lastName: data['lastName'] ?? '',
       email: data['email'] ?? '',
-      gender: data['gender'] == 'm' ? Gender.m : Gender.f,
+      gender: data['gender'] == 'm'
+          ? Gender.m
+          : (data['gender'] == 'f' ? Gender.f : Gender.x),
       photoUrl: data['photoUrl'] ?? '',
       role: data['role'] == 'admin' ? UserRole.admin : UserRole.user,
       isDisabled: data['isDisabled'] ?? false,

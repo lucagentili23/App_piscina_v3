@@ -13,6 +13,7 @@ import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:app_piscina_v3/widgets/course_details/booking_modal_bottom_sheet.dart';
 import 'package:app_piscina_v3/widgets/course_details/course_info_card.dart';
 import 'package:app_piscina_v3/widgets/course_details/course_type_bedge.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CourseDetailsUser extends StatefulWidget {
@@ -28,6 +29,8 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
   final _courseService = CourseService();
   final _authService = UserService();
   final _childService = ChildService();
+
+  bool get _isGuest => FirebaseAuth.instance.currentUser == null;
 
   Course? _course;
   UserModel? _user;
@@ -198,7 +201,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_course == null || _user == null) {
+    if (_course == null || (!_isGuest && _user == null)) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -325,10 +328,13 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
               child: _isBooking
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
-                      onPressed: _isBooked ? null : _handleBookingPress,
+                      onPressed: _isGuest
+                          ? _showLoginDialog
+                          : (_isBooked ? null : _handleBookingPress),
+
                       child: Text(
                         'PRENOTA POSTO',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -436,5 +442,37 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
         );
       }
     }
+  }
+
+  void _showLoginDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(
+          Icons.account_circle_outlined,
+          color: AppTheme.primaryColor,
+          size: 48.0,
+        ),
+        title: const Text("Accesso Richiesto", textAlign: TextAlign.center),
+        content: const Text(
+          "Per poter prenotare i corsi è necessario eseguire l'accesso",
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Annulla"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Nav.to(context, const SignIn());
+            },
+            child: const Text("Accedi"),
+          ),
+        ],
+        actionsAlignment: MainAxisAlignment.center,
+      ),
+    );
   }
 }

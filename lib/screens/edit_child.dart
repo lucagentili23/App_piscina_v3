@@ -31,6 +31,7 @@ class _EditChildState extends State<EditChild> {
   List<DropdownMenuEntry<Gender>> sexEntries = [
     DropdownMenuEntry(value: Gender.m, label: "Maschio"),
     DropdownMenuEntry(value: Gender.f, label: "Femmina"),
+    DropdownMenuEntry(value: Gender.x, label: "Preferisco non dirlo"),
   ];
 
   bool _isLoading = false;
@@ -91,9 +92,18 @@ class _EditChildState extends State<EditChild> {
     });
 
     try {
-      final photoUrl = _selectedValue == Gender.m
-          ? 'assets/images/Immagine_profilo_m.png'
-          : 'assets/images/Immagine_profilo_f.png';
+      String photoUrl;
+
+      switch (_selectedValue) {
+        case Gender.m:
+          photoUrl = 'assets/images/Immagine_profilo_m.png';
+          break;
+        case Gender.f:
+          photoUrl = 'assets/images/Immagine_profilo_f.png';
+          break;
+        default:
+          photoUrl = 'assets/images/Immagine_profilo_x.png';
+      }
 
       final firstName =
           (_nameController.text[0].toUpperCase() +
