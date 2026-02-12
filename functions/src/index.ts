@@ -263,67 +263,77 @@ export const onAttendeeRemoved = onDocumentDeleted(
 );
 
 // Esegue ogni giorno a mezzanotte
-export const cleanupOldData = onSchedule("every day 00:00", async (event) => {
-  const now = new Date();
-  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000); // 14 giorni fa
+export const cleanupOldData = onSchedule(
+  {
+    schedule: "every day 00:00",
+    timeoutSeconds: 540, // Aumenta a 5 minuti
+  },
+  async (event) => {
+    const now = new Date();
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000); // 14 giorni fa
 
-  try {
-    // --- 1. PULIZIA CORSI VECCHI ---
-    // Query per i corsi con data < 2 settimane fa
-    const oldCoursesSnapshot = await db
-      .collection("courses")
-      .where("date", "<", admin.firestore.Timestamp.fromDate(twoWeeksAgo))
-      .get();
+    try {
+      // --- 1. PULIZIA CORSI VECCHI ---
+      // Query per i corsi con data < 2 settimane fa
+      const oldCoursesSnapshot = await db
+        .collection("courses")
+        .where("date", "<", admin.firestore.Timestamp.fromDate(twoWeeksAgo))
+        .get();
 
-    console.log(
-      `Trovati ${oldCoursesSnapshot.size} corsi vecchi da eliminare.`,
-    );
+      console.log(
+        `Trovati ${oldCoursesSnapshot.size} corsi vecchi da eliminare.`,
+      );
 
-    // Usiamo un loop per eliminare ricorsivamente (Corso + Sottocollezione attendees)
-    const deleteCoursePromises = oldCoursesSnapshot.docs.map(async (doc) => {
-      // recursiveDelete è fondamentale perché i corsi hanno la sottocollezione 'attendees'
-      await db.recursiveDelete(doc.ref);
-    });
+      // Usiamo un loop per eliminare ricorsivamente (Corso + Sottocollezione attendees)
+      const deleteCoursePromises = oldCoursesSnapshot.docs.map(async (doc) => {
+        // recursiveDelete è fondamentale perché i corsi hanno la sottocollezione 'attendees'
+        await db.recursiveDelete(doc.ref);
+      });
 
-    await Promise.all(deleteCoursePromises);
+      await Promise.all(deleteCoursePromises);
 
-    // --- 2. PULIZIA NOTIFICHE VECCHIE ---
-    // Usiamo collectionGroup per cercare in TUTTE le sottocollezioni 'notifications' di tutti gli utenti
-    const oldNotificationsSnapshot = await db
-      .collectionGroup("notifications")
-      .where("createdAt", "<", admin.firestore.Timestamp.fromDate(twoWeeksAgo))
-      .get();
+      // --- 2. PULIZIA NOTIFICHE VECCHIE ---
+      // Usiamo collectionGroup per cercare in TUTTE le sottocollezioni 'notifications' di tutti gli utenti
+      const oldNotificationsSnapshot = await db
+        .collectionGroup("notifications")
+        .where(
+          "createdAt",
+          "<",
+          admin.firestore.Timestamp.fromDate(twoWeeksAgo),
+        )
+        .get();
 
-    console.log(
-      `Trovate ${oldNotificationsSnapshot.size} notifiche vecchie da eliminare.`,
-    );
+      console.log(
+        `Trovate ${oldNotificationsSnapshot.size} notifiche vecchie da eliminare.`,
+      );
 
-    // Le eliminazioni in batch supportano max 500 operazioni
-    const batchSize = 500;
-    const batches = [];
-    let batch = db.batch();
-    let operationCounter = 0;
+      // Le eliminazioni in batch supportano max 500 operazioni
+      const batchSize = 500;
+      const batches = [];
+      let batch = db.batch();
+      let operationCounter = 0;
 
-    oldNotificationsSnapshot.docs.forEach((doc) => {
-      batch.delete(doc.ref);
-      operationCounter++;
+      oldNotificationsSnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+        operationCounter++;
 
-      if (operationCounter === batchSize) {
+        if (operationCounter === batchSize) {
+          batches.push(batch.commit());
+          batch = db.batch();
+          operationCounter = 0;
+        }
+      });
+
+      // Committa le rimanenti
+      if (operationCounter > 0) {
         batches.push(batch.commit());
-        batch = db.batch();
-        operationCounter = 0;
       }
-    });
 
-    // Committa le rimanenti
-    if (operationCounter > 0) {
-      batches.push(batch.commit());
+      await Promise.all(batches);
+
+      console.log("Pulizia completata.");
+    } catch (error) {
+      console.error("Errore durante la pulizia automatica:", error);
     }
-
-    await Promise.all(batches);
-
-    console.log("Pulizia completata.");
-  } catch (error) {
-    console.error("Errore durante la pulizia automatica:", error);
-  }
-});
+  },
+);
