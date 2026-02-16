@@ -163,32 +163,41 @@ class _UserHomeState extends State<UserHome> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment
+                            .center, // Meglio center per allineare con l'avatar
                         children: [
                           CircleAvatar(
                             radius: 40,
                             backgroundImage: AssetImage(_user!.photoUrl),
                           ),
                           const SizedBox(width: 20),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Ciao,',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
+                          // Aggiungi Expanded qui
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Ciao,',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                _user!.firstName,
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  color: AppTheme.primaryColor,
-                                  fontWeight: FontWeight.bold,
+                                Text(
+                                  _user!.firstName,
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  // Aggiungi queste proprietà per gestire il testo lungo
+                                  overflow: TextOverflow
+                                      .ellipsis, // Mette i puntini "..." se troppo lungo
+                                  maxLines:
+                                      2, // Oppure permetti di andare a capo su massimo 2 righe
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
