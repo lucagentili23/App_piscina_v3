@@ -389,7 +389,16 @@ class UserService {
         batch.delete(doc.reference);
       }
 
-      batch.commit();
+      final attendeeSnapshot = await _db
+          .collectionGroup('attendees')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (var doc in attendeeSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
       return true;
     } catch (e) {
       return false;

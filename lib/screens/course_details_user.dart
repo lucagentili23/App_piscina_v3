@@ -264,30 +264,35 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
-                              vertical: 4,
+                              vertical: 8,
                             ),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              // 1. CAMBIAMENTO FONDAMENTALE: Allinea tutto al centro verticalmente
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundImage: AssetImage(
-                                        attendee.displayedPhotoUrl,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      attendee.displayedName,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ],
+                                CircleAvatar(
+                                  backgroundImage: AssetImage(
+                                    attendee.displayedPhotoUrl,
+                                  ),
                                 ),
+                                const SizedBox(width: 10),
+
+                                // 2. Rimosso il Padding manuale (top: 10) che non serve più
+                                Expanded(
+                                  child: Text(
+                                    attendee.displayedName,
+                                    style: const TextStyle(fontSize: 16),
+                                    // Il testo andrà a capo e tutto il blocco rimarrà centrato
+                                  ),
+                                ),
+
+                                const SizedBox(width: 8),
+
                                 TextButton(
                                   onPressed:
                                       DateTime.now().isBefore(
                                         _course!.date.subtract(
-                                          Duration(hours: 6),
+                                          const Duration(hours: 6),
                                         ),
                                       )
                                       ? () => _unbook(attendee.id)
@@ -296,7 +301,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                                           'Non è possibile cancellare la prenotazione nelle 8 ore precedenti il corso',
                                           'Indietro',
                                         ),
-                                  child: Text('Rimuovi'),
+                                  child: const Text('Rimuovi'),
                                 ),
                               ],
                             ),
@@ -309,6 +314,7 @@ class _CourseDetailsUserState extends State<CourseDetailsUser> {
                         onPressed: _handleBookingPress,
                         child: Text(
                           'AGGIUNGI PRENOTAZIONE',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

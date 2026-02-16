@@ -1,6 +1,8 @@
+import 'package:app_piscina_v3/layouts/user_layout.dart';
 import 'package:app_piscina_v3/models/attendee.dart';
 import 'package:app_piscina_v3/services/course_service.dart';
 import 'package:app_piscina_v3/utils/dialogs.dart';
+import 'package:app_piscina_v3/utils/navigation.dart';
 import 'package:flutter/material.dart';
 
 class ViewAttendees extends StatefulWidget {
@@ -48,7 +50,7 @@ class _ViewAttendeesState extends State<ViewAttendees> {
         showSuccessDialog(
           context,
           'Prenotazione rimossa con successo!',
-          onContinue: () => Navigator.pop(context),
+          onContinue: () => Nav.replace(context, const UserLayout()),
         );
       }
 
@@ -94,31 +96,52 @@ class _ViewAttendeesState extends State<ViewAttendees> {
               child: ListView.builder(
                 itemCount: widget.attendees.length,
                 itemBuilder: (context, index) {
+                  final attendee =
+                      widget.attendees[index]; // Comodo per pulire il codice
+
                   return Card(
+                    // Aggiunto margin per separare le card visivamente (opzionale ma consigliato)
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     child: Padding(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10), // Padding interno
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundImage: AssetImage(
-                                  widget.attendees[index].displayedPhotoUrl,
-                                ),
-                              ),
-                              const SizedBox(width: 15),
-                              Text(
-                                widget.attendees[index].displayedName,
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ],
+                          // 1. AVATAR (Dimensione fissa)
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundImage: AssetImage(
+                              attendee.displayedPhotoUrl,
+                            ),
                           ),
+                          const SizedBox(width: 15),
+
+                          // 2. NOME (Flessibile - Si prende lo spazio rimanente)
+                          Expanded(
+                            child: Text(
+                              attendee.displayedName,
+                              style: const TextStyle(fontSize: 16),
+                              // Di default il Text va a capo se non c'è spazio.
+                              // Se volessi troncarlo coi puntini: overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          // 3. BOTTONE (Dimensione fissa in base al testo)
                           TextButton(
-                            onPressed: () =>
-                                _unbookAttendee(widget.attendees[index].id),
-                            child: Text('Rimuovi'),
+                            // Aggiungi un minimo di padding al bottone per evitare tocchi accidentali
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              minimumSize: const Size(
+                                50,
+                                36,
+                              ), // Rende il tap target adeguato
+                            ),
+                            onPressed: () => _unbookAttendee(attendee.id),
+                            child: const Text('Rimuovi'),
                           ),
                         ],
                       ),
